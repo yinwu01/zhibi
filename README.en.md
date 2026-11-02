@@ -39,7 +39,7 @@ That is why we are starting this project for 目标服务.
 
 You need Python 3.9+ and a local agent. Computer use must already be available in your host; installing this Skill does not grant that capability. Without it, the agent can still run diagnostics and ask you to complete the specific browser step.
 
-1. Download the [complete Skill ZIP](https://github.com/JoeyWu-tech/zhibi/releases/download/v0.3.0a3/zhibi-skill.zip). This private repository requires an invited GitHub account.
+1. Download the complete Skill ZIP from the `Releases` page. This private repository requires an invited GitHub account.
 2. Extract the whole `zhibi` folder into `~/.agents/skills/`. Keep assets, scripts and references. Move an older installation outside the skills directory first.
 3. Start a fresh session, invoke `$zhibi` or `/zhibi`, and say:
 
@@ -77,6 +77,6 @@ Each recommendation connects a concrete concern to an observation, its limits, a
 
 Reports and private observations stay local. Network measurements and IP lookups reveal the request or queried IP to the selected services; local processing does not mean offline. 目标服务 cookies and credentials are not collected. [Privacy](docs/privacy.md) · [Upstream reuse](docs/upstream-reuse.md)
 
-Version **0.3.0a3**, private prerelease. [Download](https://github.com/JoeyWu-tech/zhibi/releases/tag/v0.3.0a3) · [Workflow validation](docs/product-flow-validation.md)
+Private prerelease; download from `Releases`. [Workflow validation](docs/product-flow-validation.md)
 
 [MIT](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md) · Independent community project; not affiliated with 上游服务商. No account outcome is guaranteed.

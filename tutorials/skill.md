@@ -5,7 +5,7 @@
 
 ## 1. 下载与安装
 
-从 [v0.3.0a3 发布页](https://github.com/JoeyWu-tech/zhibi/releases/tag/v0.3.0a3)下载 `zhibi-skill.zip`。这是包含核心的完整包，无需 pip 或另外安装依赖。
+从 `Releases` 页面下载 `zhibi-skill.zip`。这是包含核心的完整包，无需 pip 或另外安装依赖。
 当前仓库为 private，需登录获邀账号；404 通常需要先核对仓库访问权限。
 
 解压整个文件夹到下列位置，保留 `SKILL.md`、`scripts`、`assets`、`references`。已有旧版先移出 skills 目录备份。
@@ -20,7 +20,7 @@ Windows 的 `~` 指用户目录，Python 命令可用 `py -3`。不要多嵌套�
 <details><summary>从源码安装</summary>
 
 ```bash
-git clone https://github.com/JoeyWu-tech/zhibi.git
+git clone https://github.com/yinwu01/zhibi.git
 cd zhibi
 python3 scripts/install_skill.py --host codex
 ```

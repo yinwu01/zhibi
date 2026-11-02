@@ -36,7 +36,7 @@
 
 需要 **Python 3.9+** 和一个本机 Agent；推荐能操作你的实际浏览器与桌面的宿主。仅安装 Skill 不会给宿主增加 computer use 能力；没有这项能力时，Agent 仍可运行检测，少量界面操作需要你接手。
 
-1. 下载 [完整 Skill ZIP](https://github.com/JoeyWu-tech/zhibi/releases/download/v0.3.0a3/zhibi-skill.zip)，解压。
+1. 下载完整 Skill ZIP（`Releases` 页面的 `zhibi-skill.zip`），解压。
 2. 把整个 `zhibi` 文件夹放到对应目录；保留 `assets`、`scripts`、`references`。已有旧版先移出备份。
 3. 新开 Agent 会话，调用知彼，告诉它你的实际使用环境。
 
@@ -111,7 +111,7 @@ computer use 负责真实界面操作，本地脚本负责测量、查询和报�
 <summary>源码安装、手动命令与无 Agent 入口</summary>
 
 ```bash
-git clone https://github.com/JoeyWu-tech/zhibi.git
+git clone https://github.com/yinwu01/zhibi.git
 cd zhibi
 python3 scripts/install_skill.py --host codex
 ```
@@ -134,6 +134,6 @@ python3 ~/.agents/skills/zhibi/scripts/zhibi.py session --preset basic --network
 
 适配了 CCBaga、CheckCC 的部分成熟检测代码，具体版本、许可和改动见[复用记录](docs/upstream-reuse.md)。项目自身的诊断与解释会保留证据边界，不把上游经验分数变成 账号处置概率。
 
-当前为 **0.3.0a3 私有预发布版**。[发布包](https://github.com/JoeyWu-tech/zhibi/releases/tag/v0.3.0a3) · [本轮主流程验收](docs/product-flow-validation.md) · [贡献](CONTRIBUTING.md)
+当前为私有预发布版，发布包见 `Releases`。[本轮主流程验收](docs/product-flow-validation.md) · [贡献](CONTRIBUTING.md)
 
 [MIT](LICENSE) · [第三方许可](THIRD_PARTY_NOTICES.md) · 独立社区项目，与 上游服务商 无隶属关系。
