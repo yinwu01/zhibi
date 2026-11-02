@@ -1,0 +1,444 @@
+{
+  "schema_version": "0.1",
+  "sample": true,
+  "run_id": "demo",
+  "generated_at": "2026-10-18T08:00:00+00:00",
+  "purpose": "registration_preparation",
+  "coverage": "partial",
+  "observations": [
+    {
+      "id": "host.runtime",
+      "check_id": "host.runtime",
+      "check_version": "0.3.0a3",
+      "measurement_status": "ok",
+      "observed_at": "2026-10-18T08:00:00+00:00",
+      "subject": "host",
+      "scope": "运行环境",
+      "summary": "已取得观测",
+      "limitations": [
+        "采集状态不表示账号安全。"
+      ],
+      "evidence_refs": [
+        "measurement"
+      ]
+    },
+    {
+      "id": "host.proxy",
+      "check_id": "host.proxy",
+      "check_version": "0.3.0a3",
+      "measurement_status": "ok",
+      "observed_at": "2026-10-18T08:00:00+00:00",
+      "subject": "host",
+      "scope": "代理环境变量摘要",
+      "summary": "已取得观测",
+      "limitations": [
+        "采集状态不表示账号安全。"
+      ],
+      "evidence_refs": [
+        "measurement"
+      ]
+    },
+    {
+      "id": "host.dns",
+      "check_id": "host.dns",
+      "check_version": "0.3.0a3",
+      "measurement_status": "ok",
+      "observed_at": "2026-10-18T08:00:00+00:00",
+      "subject": "host",
+      "scope": "DNS 配置摘要",
+      "summary": "已取得观测",
+      "limitations": [
+        "采集状态不表示账号安全。"
+      ],
+      "evidence_refs": [
+        "measurement"
+      ]
+    },
+    {
+      "id": "client.installed",
+      "check_id": "client.installed",
+      "check_version": "0.3.0a3",
+      "measurement_status": "ok",
+      "observed_at": "2026-10-18T08:00:00+00:00",
+      "subject": "cli",
+      "scope": "目标客户端 安装存在性",
+      "summary": "已取得观测",
+      "limitations": [
+        "采集状态不表示账号安全。"
+      ],
+      "evidence_refs": [
+        "measurement"
+      ]
+    },
+    {
+      "id": "browser.context",
+      "check_id": "browser.context",
+      "check_version": "0.3.0a3",
+      "measurement_status": "ok",
+      "observed_at": "2026-10-18T08:00:00+00:00",
+      "subject": "actual_browser",
+      "scope": "实际浏览器上下文",
+      "summary": "已取得观测",
+      "limitations": [
+        "采集状态不表示账号安全。"
+      ],
+      "evidence_refs": [
+        "measurement"
+      ]
+    },
+    {
+      "id": "browser.egress",
+      "check_id": "browser.egress",
+      "check_version": "0.3.0a3",
+      "measurement_status": "ok",
+      "observed_at": "2026-10-18T08:00:00+00:00",
+      "subject": "actual_browser",
+      "scope": "浏览器出口",
+      "summary": "已取得观测",
+      "limitations": [
+        "采集状态不表示账号安全。"
+      ],
+      "evidence_refs": [
+        "measurement"
+      ]
+    },
+    {
+      "id": "network.egress",
+      "check_id": "network.egress",
+      "check_version": "0.3.0a3",
+      "measurement_status": "ok",
+      "observed_at": "2026-10-18T08:00:00+00:00",
+      "subject": "cli",
+      "scope": "命令行出口",
+      "summary": "已取得观测",
+      "limitations": [
+        "采集状态不表示账号安全。"
+      ],
+      "evidence_refs": [
+        "measurement"
+      ]
+    },
+    {
+      "id": "network.metadata",
+      "check_id": "network.metadata",
+      "check_version": "0.3.0a3",
+      "measurement_status": "skipped",
+      "observed_at": "2026-10-18T08:00:00+00:00",
+      "subject": "cli",
+      "scope": "第三方 IP 归属",
+      "summary": "尚未测量",
+      "limitations": [
+        "采集状态不表示账号安全。"
+      ],
+      "evidence_refs": [
+        "measurement"
+      ]
+    },
+    {
+      "id": "intake.context",
+      "check_id": "intake.context",
+      "check_version": "0.3.0a3",
+      "measurement_status": "ok",
+      "observed_at": "2026-10-18T08:00:00+00:00",
+      "subject": "user_input",
+      "scope": "背景信息",
+      "summary": "仅接受产品、阶段、地区代码与分流预期。",
+      "limitations": [
+        "不构成账号资格或长期结果证明。"
+      ],
+      "evidence_refs": [
+        "method"
+      ]
+    },
+    {
+      "id": "history.context",
+      "check_id": "history.context",
+      "check_version": "0.3.0a3",
+      "measurement_status": "skipped",
+      "observed_at": "2026-10-18T08:00:00+00:00",
+      "subject": "local_history",
+      "scope": "背景信息",
+      "summary": "没有平台内部关联或长期账号结果数据。",
+      "limitations": [
+        "不构成账号资格或长期结果证明。"
+      ],
+      "evidence_refs": [
+        "method"
+      ]
+    },
+    {
+      "id": "network.ipv6",
+      "check_id": "network.ipv6",
+      "check_version": "0.3.0a3",
+      "measurement_status": "skipped",
+      "observed_at": null,
+      "subject": "host",
+      "scope": "缺少输入",
+      "summary": "没有提供这项观测。",
+      "limitations": [
+        "不能推断结果。"
+      ],
+      "evidence_refs": [
+        "method"
+      ]
+    },
+    {
+      "id": "network.connectivity",
+      "check_id": "network.connectivity",
+      "check_version": "0.3.0a3",
+      "measurement_status": "skipped",
+      "observed_at": null,
+      "subject": "host",
+      "scope": "缺少输入",
+      "summary": "没有提供这项观测。",
+      "limitations": [
+        "不能推断结果。"
+      ],
+      "evidence_refs": [
+        "method"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "policy.context",
+      "rule_id": "policy.context",
+      "assessment": "needs_confirmation",
+      "observation_ids": [
+        "intake.context"
+      ],
+      "evidence_refs": [
+        "appeals",
+        "regions",
+        "method",
+        "measurement"
+      ],
+      "statement": "注册条件需要按真实情况核对。",
+      "limitations": [
+        "IP 归属与用户真实使用地区可以不同；IP 不能替代主体资格。",
+        "引用来源存在未生效、未来核对时间或超过复核期限的情况。"
+      ],
+      "next_step": "先打开引用来源，核对适用范围、生效时间与更新内容，再解释该项。",
+      "recheck": "记录所核对政策的适用范围与生效日期。"
+    },
+    {
+      "id": "network.route",
+      "rule_id": "network.route",
+      "assessment": "needs_confirmation",
+      "observation_ids": [
+        "browser.context",
+        "browser.egress",
+        "network.egress"
+      ],
+      "evidence_refs": [
+        "method",
+        "ipify",
+        "measurement"
+      ],
+      "statement": "两个入口出口不同，需要确认是否符合预期。",
+      "limitations": [
+        "有意分流、出口负载均衡和不同地址族都可以产生正常差异。",
+        "诊断端点不代表到 目标站点的路由；出口一致不代表账号不会被限制。"
+      ],
+      "next_step": "核对浏览器与命令行各自的网络设置；确认属于意外分流后再处理。",
+      "recheck": "使用相同端点与地址族，在五分钟内复测。"
+    },
+    {
+      "id": "host.proxy",
+      "rule_id": "host.proxy",
+      "assessment": "verified",
+      "observation_ids": [
+        "host.proxy"
+      ],
+      "evidence_refs": [
+        "method",
+        "measurement"
+      ],
+      "statement": "已检查代理环境变量的配置状态。",
+      "limitations": [
+        "浏览器扩展、系统代理和企业网络不一定体现在环境变量里。"
+      ],
+      "next_step": "此结果不涵盖系统代理、浏览器扩展或透明代理。",
+      "recheck": "网络路径仍需独立测量。"
+    },
+    {
+      "id": "browser.context",
+      "rule_id": "browser.context",
+      "assessment": "verified",
+      "observation_ids": [
+        "browser.context"
+      ],
+      "evidence_refs": [
+        "method",
+        "measurement"
+      ],
+      "statement": "当前探针页的基础浏览器能力可用。",
+      "limitations": [
+        "本地探针页的存储权限不等于 目标站点权限；多语言用户很正常。"
+      ],
+      "next_step": "无需为了匹配地区而改变自己的语言；实际站点权限需单独核实。",
+      "recheck": "更换浏览器或权限设置后复查。"
+    },
+    {
+      "id": "client.installed",
+      "rule_id": "client.installed",
+      "assessment": "not_applicable",
+      "observation_ids": [
+        "client.installed"
+      ],
+      "evidence_refs": [
+        "method",
+        "measurement"
+      ],
+      "statement": "使用网页版无需先安装 目标客户端。",
+      "limitations": [
+        "只用网页版的用户无需安装 目标客户端。"
+      ],
+      "next_step": null,
+      "recheck": null
+    },
+    {
+      "id": "host.dns",
+      "rule_id": "host.dns",
+      "assessment": "verified",
+      "observation_ids": [
+        "host.dns"
+      ],
+      "evidence_refs": [
+        "method",
+        "measurement"
+      ],
+      "statement": "已读取 DNS 配置文件中的解析器数量。",
+      "limitations": [
+        "浏览器安全 DNS、系统分流解析不一定出现在 resolv.conf。"
+      ],
+      "next_step": "该观测不能判断 DNS 泄漏，也不涵盖浏览器安全 DNS。",
+      "recheck": "遇到实际解析故障时再针对对应客户端定位。"
+    },
+    {
+      "id": "network.metadata",
+      "rule_id": "network.metadata",
+      "assessment": "unknown",
+      "observation_ids": [
+        "network.metadata"
+      ],
+      "evidence_refs": [
+        "ipwhois",
+        "method",
+        "measurement"
+      ],
+      "statement": "这项检查尚未取得可用结果。",
+      "limitations": [
+        "运营商归属和数据库定位可能过时，无法证明用户实际地区。"
+      ],
+      "next_step": "查看测量状态；按需启用对应检查或补充浏览器文件。",
+      "recheck": "取得成功观测后重新评估。"
+    },
+    {
+      "id": "history.coverage",
+      "rule_id": "history.coverage",
+      "assessment": "unknown",
+      "observation_ids": [
+        "history.context"
+      ],
+      "evidence_refs": [
+        "method",
+        "measurement"
+      ],
+      "statement": "本次检查无法判断长期稳定性或平台内部关联。",
+      "limitations": [
+        "共用一个出口不代表同一个人；一次成功也不代表长期稳定。"
+      ],
+      "next_step": "需要复查变化时保存前后两次报告；案例研究另行记录观察窗口。",
+      "recheck": "比较可比观测，并区分配置变化与账号结果。"
+    },
+    {
+      "id": "network.ipv6",
+      "rule_id": "network.ipv6",
+      "assessment": "unknown",
+      "observation_ids": [
+        "network.ipv6"
+      ],
+      "evidence_refs": [
+        "method",
+        "ipify",
+        "measurement"
+      ],
+      "statement": "这项检查尚未取得可用结果。",
+      "limitations": [
+        "代理出口具备 IPv6 不代表本机或浏览器有 IPv6；没有 IPv6 也不是账号风险。"
+      ],
+      "next_step": "查看测量状态；按需启用对应检查或补充浏览器文件。",
+      "recheck": "取得成功观测后重新评估。"
+    },
+    {
+      "id": "network.connectivity",
+      "rule_id": "network.connectivity",
+      "assessment": "unknown",
+      "observation_ids": [
+        "network.connectivity"
+      ],
+      "evidence_refs": [
+        "method",
+        "measurement"
+      ],
+      "statement": "这项检查尚未取得可用结果。",
+      "limitations": [
+        "公共首页 HEAD 返回 403 或重定向，不等于实际浏览器或账号无法使用。"
+      ],
+      "next_step": "查看测量状态；按需启用对应检查或补充浏览器文件。",
+      "recheck": "取得成功观测后重新评估。"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "method",
+      "kind": "project_design",
+      "title": "知彼：观测、解释与账号结果的边界",
+      "source": "docs/research-method.md",
+      "checked_at": "2026-10-18T00:37:31+08:00",
+      "scope": "项目的测量规范；不是 上游服务商 内部风控政策。"
+    },
+    {
+      "id": "appeals",
+      "kind": "official_policy",
+      "title": "上游服务商：Safeguards warnings and appeals",
+      "source": "https://support.claude.com/en/articles/8241253-safeguards-warnings-and-appeals",
+      "checked_at": "2026-10-18T00:37:31+08:00",
+      "scope": "官方列举使用政策、服务条款及不支持地区注册等原因；并未公布环境特征权重。"
+    },
+    {
+      "id": "regions",
+      "kind": "official_policy",
+      "title": "上游服务商：Supported Regions Policy（需核对生效时间）",
+      "source": "https://www.anthropic.com/legal/supported-regions",
+      "checked_at": "2026-10-18T00:37:31+08:00",
+      "scope": "抓取时页面声明 2026-11-12 生效；不能直接当作 2026-10-18 的现行地区判定。"
+    },
+    {
+      "id": "ipify",
+      "kind": "third_party",
+      "title": "ipify IPv4 endpoint documentation",
+      "source": "https://www.ipify.org/",
+      "checked_at": "2026-10-18T00:37:31+08:00",
+      "scope": "仅说明端点返回请求出口 IP；不是到 上游的路径证明。"
+    },
+    {
+      "id": "ipwhois",
+      "kind": "third_party",
+      "title": "IPWhois IP lookup documentation",
+      "source": "https://ipwhois.io/documentation",
+      "checked_at": "2026-10-18T00:37:31+08:00",
+      "scope": "第三方国家/ASN 归属，可能不准确；不代表平台标签或真实位置。"
+    },
+    {
+      "id": "measurement",
+      "kind": "project_design",
+      "title": "合成示例观测",
+      "source": "synthetic fixture",
+      "checked_at": "2026-10-18T08:00:00+00:00",
+      "scope": "模拟数据"
+    }
+  ],
+  "data_flows": []
+}

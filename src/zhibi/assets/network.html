@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src https:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer"><title>知彼 · 检查当前环境</title>
+<style>
+:root{color-scheme:light;--paper:#f4f2e9;--ink:#1c4036;--muted:#66766b;--line:#c8d0c2;--accent:#a43f27}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.7 "Avenir Next","PingFang SC","Microsoft YaHei",sans-serif}main{max-width:1040px;margin:auto;padding:28px 32px 56px}header{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--ink);padding-bottom:18px}header strong{font-size:23px}header span{font:12px/2 ui-monospace,monospace;color:var(--muted)}.intro{display:grid;grid-template-columns:1.6fr 1fr;gap:40px;padding:46px 0 32px;align-items:end}h1{font-size:48px;line-height:1.2;font-weight:650;letter-spacing:-1.5px;margin:0 0 18px}h2{font-size:25px;font-weight:600;margin:0 0 14px}h3{font-size:17px;margin:0}.eyebrow{font:12px ui-monospace,monospace;letter-spacing:.1em;color:var(--accent);margin:0 0 16px}p{margin:8px 0}.subtle{color:var(--muted);font-size:14px}.note{border-left:2px solid var(--accent);padding:8px 18px;font-size:14px}.options{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);background:#fffdf7}label{display:flex;gap:12px;padding:22px;cursor:pointer}label+label{border-left:1px solid var(--line)}label input{margin-top:7px;accent-color:var(--ink)}label small{display:block;color:var(--muted);font-size:12px;margin-top:7px}.controls{display:flex;align-items:center;gap:20px;margin:22px 0}button{border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:12px 22px;font:600 15px inherit;cursor:pointer;border-radius:3px}button:disabled{opacity:.5;cursor:default}.secondary{background:transparent;color:var(--ink)}button:hover{filter:brightness(1.12)}button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:4px}#status{font-size:13px;color:var(--muted)}section.results{border-top:1px solid var(--ink);padding-top:28px;margin-top:30px}.result{display:grid;grid-template-columns:180px 1fr;gap:24px;padding:19px 0;border-bottom:1px solid var(--line)}.result strong{overflow-wrap:anywhere}.result p{font-size:13px;color:var(--muted)}.state{font:12px ui-monospace,monospace;color:var(--accent)}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#e6e9df;padding:18px;font:12px/1.7 ui-monospace,monospace}details{border-top:1px solid var(--line);padding:16px 0;margin-top:16px}summary{cursor:pointer}footer{margin-top:42px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px}[hidden]{display:none!important}
+@media(max-width:700px){main{padding:22px 20px}.intro{grid-template-columns:1fr;gap:12px;padding-top:30px}h1{font-size:36px}.options{grid-template-columns:1fr}label+label{border-left:0;border-top:1px solid var(--line)}.controls{align-items:flex-start;flex-direction:column;gap:12px}.result{grid-template-columns:1fr;gap:8px}header span{font-size:10px}}
+</style></head><body><main>
+<header><strong>知彼 Zhibi</strong><span>01 选择环境 → 02 主动检查</span></header>
+<div class="intro"><div><p class="eyebrow">让 Agent 完成这次检查。</p><h1>检查当前环境。</h1><p class="subtle">开始检查 → 保存到本机 → Agent 打开报告并继续核对设置。</p></div><p class="note">请确认这是你实际使用 上游的浏览器。已有 computer use 的 Agent 可直接完成下面的操作。</p></div>
+<section aria-label="选择检测范围"><p class="subtle">检测只在点击后开始。结果保存在本机；所选公网服务会看到连接 IP。不会读取 目标服务 Cookie。</p><details id="network-options" open><summary>本次网络检查范围</summary><div class="options">
+<label><input type="checkbox" id="ipv4"><span><b>IPv4 出口</b><small>向 api.ipify.org 请求一次，对方会看到请求出口 IP。不带 Cookie。</small></span></label>
+<label><input type="checkbox" id="ipv6"><span><b>IPv6 出口</b><small>向 api6.ipify.org 请求一次。未测成会保留为未知。</small></span></label>
+<label><input type="checkbox" id="webrtc"><span><b>WebRTC 路径</b><small>联系 Google STUN（stun.l.google.com:19302），收集 ICE 候选；不访问摄像头或麦克风。</small></span></label>
+</div></details>
+<details id="local-options"><summary>加做浏览器深入检查（可选、无需 Key、仅本地）</summary>
+<p class="subtle">逐项选择；不联网，不上传指纹。结果保留在导出的本地文件中。</p>
+<div class="options">
+<label><input type="checkbox" id="detail-locale"><span><b>时区与语言</b><small>UTC 偏移、简繁体语言变体。不按中文加风险分。</small></span></label>
+<label><input type="checkbox" id="detail-identity"><span><b>浏览器与设备</b><small>版本、引擎、系统与厂商标记；Emoji 系列只依据 UA 推断。</small></span></label>
+<label><input type="checkbox" id="detail-runtime"><span><b>运行容器</b><small>webdriver 自报、WebView 与无头浏览器标记。</small></span></label>
+</div><div class="options">
+<label><input type="checkbox" id="detail-hardware"><span><b>浏览器可用 CPU</b><small>浏览器报告的逻辑处理器数；不读取 CPU 型号。</small></span></label>
+<label><input type="checkbox" id="detail-fonts"><span><b>字体匹配</b><small>本地用文字宽度探测 26 个固定候选；不生成指纹哈希。</small></span></label>
+<label><input type="checkbox" id="detail-permissions"><span><b>本页定位权限</b><small>只读权限状态，不弹出授权、不请求位置坐标。</small></span></label>
+</div></details>
+<details><summary>扩展渲染与服务端观测（可选）</summary><div class="options">
+<label><input type="checkbox" id="extra-canvas"><span><b>Canvas 渲染一致性</b><small>比较两次绘图；摘要和哈希仅保存本机。</small></span></label>
+<label><input type="checkbox" id="extra-webgl"><span><b>WebGL 图形信息</b><small>读取图形渲染器及版本，仅本机。</small></span></label>
+<label><input type="checkbox" id="extra-audio"><span><b>离线 Audio 渲染</b><small>合成固定音频样本；不录音、不播放。</small></span></label>
+<label><input type="checkbox" id="extra-dns"><span><b>浏览器 DNS（自建观测端）</b><small>使用一次性子域名观察解析器与 ECS；结果保留在自己的服务器和本机。</small></span></label>
+<label><span><b>自己的 DNS 观测地址</b><input id="dns-observer" type="url" placeholder="https://dns.example.org" aria-label="自己的 DNS 观测地址"></span></label>
+<label><input type="checkbox" id="extra-tls"><span><b>浏览器 TLS / HTTP</b><small>可选外部服务 tls.peet.ws 会看到出口 IP、TLS 和请求头；不发送 Cookie。服务不允许跨域时保留失败。</small></span></label>
+</div></details>
+<div class="controls"><button id="run">开始检查</button><span id="status" role="status" aria-live="polite">默认不联网。只记录本页浏览器背景和能力。</span></div></section>
+<section class="results" id="results" hidden><p class="eyebrow">采集结果</p><h2>保存后，Agent 继续。</h2><p id="automation" class="note" hidden>这是自动化浏览器。结果用于软件测试，不代表你的实际使用环境。</p><div id="measurements"></div>
+<div class="controls"><button id="download" class="secondary">保存并交给本机 Skill</button><span class="subtle">文件含测量 IP 和浏览器背景，请保留在本机。Agent 通过脚本读取文件，聊天只接收摘要。</span></div>
+<details><summary>查看导出内容</summary><pre id="preview"></pre></details></section>
+<details><summary>怎样理解这些结果？</summary><p class="subtle">HTTPS、IPv6 和 WebRTC 使用不同协议，出口差异需要结合你的路由预期解释。ICE 候选可能包含 mDNS、本地地址或映射地址；没有候选、测量超时都不等于“没有泄漏”。本页不读取 Cookie 内容，也不检查 目标账号。</p><p class="subtle">语言、时区和浏览器信息用于说明背景，不自动转换成封号分。只有选中字体匹配才会调用 Canvas 文字宽度测量；不会枚举完整字体；另选 Canvas 扩展时生成的哈希仅保留在本机。定位权限只代表本页，不能代表 目标站点页面。</p></details>
+<footer>知彼 · 检测模式的浏览器探针。出口验证与环境采集分别适配自 CCBaga、CheckCC（MIT），许可随页面源码附带。</footer>
+</main><noscript>请启用 JavaScript 后执行本地检查。</noscript>
+<script>/* ZHIBI_NETWORK_MODULE */</script>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);let output=null;
+const labels={ok:"已取得",error:"未测成",timeout:"超时",skipped:"未启用",invalid_response:"响应格式无效",quota_exceeded:"服务限流",unsupported:"浏览器不支持",no_candidates:"未取得候选",configuration_required:"需配置观测端",no_record:"未收到解析记录"};
+function row(title,value,state,detail){const el=document.createElement("div");el.className="result";const name=document.createElement("div"),head=document.createElement("h3"),status=document.createElement("span");head.textContent=title;status.textContent=labels[state]||state;status.className="state";name.append(head,status);const content=document.createElement("div"),strong=document.createElement("strong"),p=document.createElement("p");strong.textContent=value;p.textContent=detail;content.append(strong,p);el.append(name,content);$("measurements").append(el);}
+$("run").addEventListener("click",async()=>{
+ output=null;$("results").hidden=true;$("measurements").replaceChildren();$("run").disabled=true;const options=["ipv4","ipv6","webrtc",...ZhibiDetails.MODULES.map(k=>"detail-"+k),...ZhibiExtras.MODULES.map(k=>"extra-"+k)];options.forEach(k=>$(k).disabled=true);
+ try {
+  $("status").textContent="正在观察所选路径…";const at=new Date().toISOString();
+  const environment=ZhibiNetwork.collectBrowserEnvironment();let storage=false;
+  try{const key="zhibi-"+crypto.randomUUID();localStorage.setItem(key,"1");storage=localStorage.getItem(key)==="1";localStorage.removeItem(key);}catch{}
+  const context={check_id:"browser.context",status:"ok",at,facts:{timezone:environment.timezone||"",language:navigator.language||"",cookies_enabled:navigator.cookieEnabled===true,storage_available:storage,automated:navigator.webdriver===true}};
+  const tasks=[4,6].map(family=>$("ipv"+family).checked?ZhibiNetwork.probeBrowserExit(family):Promise.resolve({family,endpoint:ZhibiNetwork.ENDPOINTS["ipv"+family],status:"skipped",at,ip:null}));
+  tasks.push($("webrtc").checked?ZhibiNetwork.probeWebRTC():Promise.resolve({status:"skipped",endpoint:ZhibiNetwork.STUN,at,candidates:[],complete:false}));
+  tasks.push(ZhibiDetails.collect(Object.fromEntries(ZhibiDetails.MODULES.map(k=>[k,$("detail-"+k).checked]))));
+  tasks.push(ZhibiExtras.collect(Object.fromEntries(ZhibiExtras.MODULES.map(k=>[k,$("extra-"+k).checked])), $("dns-observer").value));
+  const [v4,v6,rtc,details,extras]=await Promise.all(tasks);
+  const legacyStatus=["ok","error","timeout","skipped"].includes(v4.status)?v4.status:"error";
+  output={schema_version:"4",context:"user_opened_browser",observations:[context,{check_id:"browser.egress",status:legacyStatus,at:v4.at,facts:v4.status==="ok"?{ip:v4.ip,family:4,endpoint:v4.endpoint}:{}}],network:{ipv4:v4,ipv6:v6,webrtc:rtc},environment,details,extras};
+  $("automation").hidden=!context.facts.automated;
+  row("浏览器背景",(environment.timezone||"未知时区")+" / "+(environment.languages.join(", ")||"未知语言"),"ok","仅记录背景，不按语言或时区评分。");
+  if(v4.status!=="skipped")row("IPv4",v4.ip||"没有可用出口",v4.status,"当前浏览器到 IPv4 诊断端点的请求。");if(v6.status!=="skipped")row("IPv6",v6.ip||"没有可用出口",v6.status,"当前浏览器到 IPv6 诊断端点的请求。");
+  if(rtc.status!=="skipped")row("WebRTC",rtc.candidates.length+" 个候选",rtc.status,rtc.candidates.map(c=>c.type+" / "+c.protocol+" / "+(c.mdns?"mDNS":c.address)).join("；")||"没有可解释的候选。不能据此判断路径安全。");
+  for(const [key,item] of Object.entries(details.checks))if(item.status!=="skipped")row(ZhibiDetails.LABELS[key],ZhibiDetails.reading(key,item.facts),item.status,key==="permissions"?"仅本页的权限状态，没有读取位置；其他网站可能不同。":"本地观察结果，不转换为风险分；详细读数与解释随文件导入本地报告。");
+  for(const [key,item] of Object.entries(extras.checks))if(item.status!=="skipped")row(ZhibiExtras.LABELS[key],ZhibiExtras.reading(key,item.facts),item.status,key==="tls"?"服务端观察，仅对应本次浏览器请求。":key==="dns"?"可选：先部署自己的权威 DNS 观测端，填写上方 HTTPS 地址再测；不会代用陌生检测网站。":"用于检查渲染可用性和变化，不能判断账号安全或设备真伪。");
+  $("preview").textContent=JSON.stringify(output,null,2);$("results").hidden=false;$("status").textContent="测量完成。点击保存，Agent 将自动生成报告。";
+ } catch {$("status").textContent="检查未完成，没有生成成功结论。";output=null;}
+ finally {$("run").disabled=false;options.forEach(k=>$(k).disabled=false);}
+});
+$("download").addEventListener("click",()=>{if(!output)return;const url=URL.createObjectURL(new Blob([JSON.stringify(output,null,2)],{type:"application/json"}));const a=document.createElement("a");a.href=url;a.download="zhibi-browser.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+</script><!-- ZHIBI_THIRD_PARTY_NOTICES --></body></html>

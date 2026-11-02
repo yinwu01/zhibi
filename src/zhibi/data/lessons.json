@@ -1,0 +1,149 @@
+[
+  {
+    "id": "platform",
+    "title": "平台为什么做风控",
+    "summary": "先确定损失、业务阶段和判断对象，再谈特征。",
+    "claims": [
+      "stage-specific-decision",
+      "multiple-actions",
+      "payment-action-analogy"
+    ],
+    "sections": [
+      {
+        "title": "一个研究模型",
+        "body": "把平台选择的动作理解为在损失、误伤、审核成本和用户摩擦之间做取舍。资格、账号完整性、支付、资源公平和滥用是不同问题；一次请求被拒绝与账号暂停也不是同一标签。这个模型是知彼的解释框架，不是已还原的 上游服务商 实现。"
+      },
+      {
+        "title": "用它指导准备",
+        "body": "先确认自己在哪个阶段遇到什么提示。注册阶段核对官方条件和浏览器可用性；支付阶段走官方账单流程；API 额度问题先看该产品的限额信息。不要让一个环境分覆盖所有阶段。"
+      }
+    ],
+    "exercise": {
+      "question": "一个 API 请求返回 429，能否直接标为账号暂停？",
+      "answer": "不能。先按 API 的限额/额度等语义排查，再查看官方账号提示。",
+      "command": "zhibi triage --signal http_429 --channel api --stage usage"
+    }
+  },
+  {
+    "id": "evidence",
+    "title": "如何区分事实、类比与假设",
+    "summary": "来源可靠不代表它能支持任意扩展结论。",
+    "claims": [
+      "behavior-relations",
+      "bot-target-analogy",
+      "uncertainty-helps-preparation"
+    ],
+    "sections": [
+      {
+        "title": "四种不同的支持",
+        "body": "官方披露仅支持披露场景；可复现测量仅支持具体测量语义；其他平台的文档提供类比；新提出的因果解释保留为假设。supported 必须与 scope_kind 一起读。"
+      },
+      {
+        "title": "让证据可以失效",
+        "body": "保留原始来源、核对时间、生效时间和复核周期。多个转载同一上游不能当作独立证据。资料不再适用时，先降级相关结论，再更新规则。"
+      }
+    ],
+    "exercise": {
+      "question": "某供应商准确判断了 IP 的 ASN，能否推出 上游会接受这个账号？",
+      "answer": "不能。归属测量与账号决定使用不同目标和信息。",
+      "command": "zhibi explain network.metadata"
+    }
+  },
+  {
+    "id": "routes",
+    "title": "出口不同，怎样判断是否要处理",
+    "summary": "先检查可比性，再核对用户预期。",
+    "claims": [
+      "route-not-ban",
+      "proxy-scope"
+    ],
+    "sections": [
+      {
+        "title": "建立测量契约",
+        "body": "明确客户端、目标端点、地址族、时间和自动化上下文。两个不同目标的出口观测不应直接比较；一次探测也不能证明到 上游的路径。"
+      },
+      {
+        "title": "正常反例改变动作",
+        "body": "预期分流是正常情况。只有差异不符合预期且影响具体任务时，才定位对应设置。知彼内置五分钟比较窗和十五分钟样本新鲜度，是工具测量约定，不是平台封禁阈值。"
+      }
+    ],
+    "exercise": {
+      "question": "仅把 route_intent 从 unknown 改为 different 后，应该改变哪个结果？",
+      "answer": "可比的出口差异从待确认变成与声明预期一致；不会生成账号安全判断。",
+      "command": "zhibi lab routing"
+    }
+  },
+  {
+    "id": "graph",
+    "title": "Graph 到底能告诉我们什么",
+    "summary": "每条边需要来源和时间，未知身份保持未知。",
+    "claims": [
+      "graph-boundary",
+      "account-graph-analogy",
+      "behavior-relations"
+    ],
+    "sections": [
+      {
+        "title": "证据图",
+        "body": "source 支持 claim，feature 描述可观测方式，check 产生 observation，rule 根据限定证据给出行动。来源更新时沿边查找受影响规则。"
+      },
+      {
+        "title": "实体事件图",
+        "body": "只记录自己已知的设备、入口和事件关系。平台可能有更大的关系图，但本地工具不能补全它。共享出口、连续发生和相似行为都不能单独证明同一身份或因果。"
+      }
+    ],
+    "exercise": {
+      "question": "两个用户共享一个办公出口，是否应该合并成一个人？",
+      "answer": "不应该。共同基础设施只能形成有范围的共享关系，不能做身份合并。",
+      "command": "zhibi theory --format json"
+    }
+  },
+  {
+    "id": "unknown",
+    "title": "为什么未知不是零风险",
+    "summary": "失败、缺失和不适用需要分别表示。",
+    "claims": [
+      "bot-target-analogy",
+      "graph-boundary"
+    ],
+    "sections": [
+      {
+        "title": "检测状态与判断状态",
+        "body": "timeout/error 说明测量未完成；skipped 说明未执行；not_applicable 说明任务不需要该项。只有明确事实可被标为 verified，且不表示账号安全。"
+      },
+      {
+        "title": "做一个失败实验",
+        "body": "在全部测量超时的合成场景中，覆盖应为 unavailable。规则可以提供下一步，但不能把空结果平均成低风险。"
+      }
+    ],
+    "exercise": {
+      "question": "所有网络端点都超时，合理输出是什么？",
+      "answer": "当前无法完成测量；保留未知，并给出可用性排查。",
+      "command": "zhibi lab failure"
+    }
+  },
+  {
+    "id": "repair",
+    "title": "验证一个具体配置修正",
+    "summary": "用隔离的配置字典观察前后变化，不改动你的系统。",
+    "claims": [
+      "proxy-scope",
+      "uncertainty-helps-preparation"
+    ],
+    "sections": [
+      {
+        "title": "最小可验证动作",
+        "body": "示例只构造冲突的大小写代理变量，再让它们一致。检测器确认冲突消失，规则解释随之改变。没有实际联网，也不修改进程或系统环境。"
+      },
+      {
+        "title": "停止在证据边界",
+        "body": "这个实验说明检测器能识别并复查配置冲突。它没有证明实际网络已通、更没有证明账号结果改善。真实变更应先保存旧配置，再只调整具体故障。"
+      }
+    ],
+    "exercise": {
+      "question": "冲突从 true 变成 false 后，能否宣称已经防封？",
+      "answer": "不能，只能确认该配置冲突已消除。",
+      "command": "zhibi lab repair"
+    }
+  }
+]

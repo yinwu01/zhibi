@@ -1,0 +1,61 @@
+{
+  "schema_version": "1",
+  "sample": true,
+  "profile": {
+    "product": "web",
+    "country_code": null,
+    "route_intent": "unknown",
+    "stage": "registration"
+  },
+  "observations": [
+    {
+      "check_id": "host.runtime",
+      "status": "timeout",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {}
+    },
+    {
+      "check_id": "host.proxy",
+      "status": "timeout",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {}
+    },
+    {
+      "check_id": "host.dns",
+      "status": "timeout",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {}
+    },
+    {
+      "check_id": "client.installed",
+      "status": "timeout",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {}
+    },
+    {
+      "check_id": "browser.context",
+      "status": "timeout",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {}
+    },
+    {
+      "check_id": "browser.egress",
+      "status": "timeout",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {}
+    },
+    {
+      "check_id": "network.egress",
+      "status": "timeout",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {}
+    },
+    {
+      "check_id": "network.metadata",
+      "status": "timeout",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {}
+    }
+  ],
+  "evaluated_at": "2026-10-18T08:00:00+00:00"
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": "1",
+  "sample": true,
+  "profile": {
+    "product": "web",
+    "country_code": null,
+    "route_intent": "different",
+    "stage": "registration"
+  },
+  "observations": [
+    {
+      "check_id": "host.runtime",
+      "status": "ok",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {
+        "python_supported": true,
+        "os_family": "Darwin"
+      }
+    },
+    {
+      "check_id": "host.proxy",
+      "status": "ok",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {
+        "configured": true,
+        "authenticated": false,
+        "unsupported_scheme": false,
+        "conflicting": false
+      }
+    },
+    {
+      "check_id": "host.dns",
+      "status": "ok",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {
+        "nameserver_count": 1
+      }
+    },
+    {
+      "check_id": "client.installed",
+      "status": "ok",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {
+        "present": false
+      }
+    },
+    {
+      "check_id": "browser.context",
+      "status": "ok",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {
+        "timezone": "Asia/Taipei",
+        "language": "zh-CN",
+        "cookies_enabled": true,
+        "storage_available": true,
+        "automated": false
+      }
+    },
+    {
+      "check_id": "browser.egress",
+      "status": "ok",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {
+        "ip": "198.51.100.20",
+        "family": 4,
+        "endpoint": "https://api.ipify.org?format=json"
+      }
+    },
+    {
+      "check_id": "network.egress",
+      "status": "ok",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {
+        "ip": "203.0.113.10",
+        "family": 4,
+        "endpoint": "https://api.ipify.org?format=json"
+      }
+    },
+    {
+      "check_id": "network.metadata",
+      "status": "skipped",
+      "at": "2026-10-18T08:00:00+00:00",
+      "facts": {}
+    }
+  ],
+  "evaluated_at": "2026-10-18T08:00:00+00:00"
+}

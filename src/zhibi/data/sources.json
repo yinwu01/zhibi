@@ -1,0 +1,118 @@
+[
+  {
+    "id": "method",
+    "kind": "project_design",
+    "title": "知彼：观测、解释与账号结果的边界",
+    "source": "docs/research-method.md",
+    "checked_at": "2026-10-18T00:37:31+08:00",
+    "scope": "项目的测量规范；不是 上游服务商 内部风控政策。",
+    "effective_at": null,
+    "review_after_days": null
+  },
+  {
+    "id": "appeals",
+    "kind": "official_policy",
+    "title": "上游服务商：Safeguards warnings and appeals",
+    "source": "https://support.claude.com/en/articles/8241253-safeguards-warnings-and-appeals",
+    "checked_at": "2026-10-18T00:37:31+08:00",
+    "scope": "官方列举使用政策、服务条款及不支持地区注册等原因；并未公布环境特征权重。",
+    "effective_at": null,
+    "review_after_days": 30
+  },
+  {
+    "id": "regions",
+    "kind": "official_policy",
+    "title": "上游服务商：Supported Regions Policy（需核对生效时间）",
+    "source": "https://www.anthropic.com/legal/supported-regions",
+    "checked_at": "2026-10-18T00:37:31+08:00",
+    "scope": "抓取时页面声明 2026-11-12 生效；不能直接当作 2026-10-18 的现行地区判定。",
+    "effective_at": "2026-11-12T00:00:00Z",
+    "review_after_days": 30
+  },
+  {
+    "id": "ipify",
+    "kind": "third_party",
+    "title": "ipify IPv4 endpoint documentation",
+    "source": "https://www.ipify.org/",
+    "checked_at": "2026-10-18T00:37:31+08:00",
+    "scope": "仅说明端点返回请求出口 IP；不是到 上游的路径证明。",
+    "effective_at": null,
+    "review_after_days": 90
+  },
+  {
+    "id": "ipwhois",
+    "kind": "third_party",
+    "title": "IPWhois IP lookup documentation",
+    "source": "https://ipwhois.io/documentation",
+    "checked_at": "2026-10-18T00:37:31+08:00",
+    "scope": "第三方国家/ASN 归属，可能不准确；不代表平台标签或真实位置。",
+    "effective_at": null,
+    "review_after_days": 90
+  },
+  {
+    "id": "distillation-feb",
+    "kind": "official_disclosure",
+    "title": "上游服务商：Detecting and preventing distillation attacks",
+    "source": "https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks",
+    "scope": "官方披露 API 蒸馏活动的行为与关联分析；不证明普通注册采用同一规则。",
+    "checked_at": "2026-10-18T00:44:28+08:00",
+    "effective_at": null,
+    "review_after_days": 90,
+    "published_at": "2026-02-23"
+  },
+  {
+    "id": "distillation-oct",
+    "kind": "official_disclosure",
+    "title": "上游服务商：Strengthening our defenses against distillation attacks",
+    "source": "https://www.anthropic.com/research/distillation-defenses",
+    "scope": "官方描述分层的反蒸馏措施、取舍与适用场景；效果数字不是普通账号封禁概率。",
+    "checked_at": "2026-10-18T00:44:28+08:00",
+    "effective_at": null,
+    "review_after_days": 90,
+    "published_at": "2026-10-12"
+  },
+  {
+    "id": "stripe-radar",
+    "kind": "third_party",
+    "title": "Stripe Radar：Transaction risk prevention",
+    "source": "https://docs.stripe.com/radar/transaction-risk-prevention",
+    "scope": "支付场景的多信号与多种处置，是比较研究；不证明 上游使用相同实现。",
+    "checked_at": "2026-10-18T00:44:28+08:00",
+    "effective_at": null,
+    "review_after_days": 90,
+    "published_at": null
+  },
+  {
+    "id": "cloudflare-bots",
+    "kind": "third_party",
+    "title": "Cloudflare：Bot scores",
+    "source": "https://developers.cloudflare.com/bots/concepts/bot-score/",
+    "scope": "请求自动化评分、未计算状态与检测引擎；不等于账号风险分。",
+    "checked_at": "2026-10-18T00:44:28+08:00",
+    "effective_at": null,
+    "review_after_days": 90,
+    "published_at": null
+  },
+  {
+    "id": "google-accounts",
+    "kind": "third_party",
+    "title": "Google：Account defender",
+    "source": "https://docs.cloud.google.com/recaptcha/docs/account-defender",
+    "scope": "账号事件、历史和关联标签的公开设计；关联多不自动等于恶意。",
+    "checked_at": "2026-10-18T00:44:28+08:00",
+    "effective_at": null,
+    "review_after_days": 90,
+    "published_at": null
+  },
+  {
+    "id": "api-errors",
+    "kind": "official_disclosure",
+    "title": "目标 API：Errors",
+    "source": "https://platform.claude.com/docs/en/api/errors",
+    "scope": "API HTTP 错误语义；不能直接迁移为网页注册错误或封禁标签。",
+    "checked_at": "2026-10-18T00:44:28+08:00",
+    "effective_at": null,
+    "review_after_days": 90,
+    "published_at": null
+  }
+]

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "知彼 Zhibi user report draft v0.1",
+  "description": "Public report structure. Schema validation does not establish privacy, evidence validity, reference integrity, or account safety.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "sample", "run_id", "generated_at", "purpose", "coverage", "observations", "findings", "evidence", "data_flows"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "sample": {"type": "boolean"},
+    "run_id": {"type": "string", "minLength": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "purpose": {"enum": ["registration_preparation", "troubleshooting", "recheck"]},
+    "coverage": {"enum": ["complete", "partial", "unavailable"]},
+    "observations": {"type": "array", "items": {"$ref": "#/$defs/observation"}},
+    "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "data_flows": {"type": "array", "items": {"$ref": "#/$defs/data_flow"}}
+  },
+  "$defs": {
+    "id_list": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "observation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "check_id", "check_version", "measurement_status", "observed_at", "subject", "scope", "summary", "limitations", "evidence_refs"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "check_id": {"type": "string", "minLength": 1},
+        "check_version": {"type": "string", "minLength": 1},
+        "measurement_status": {"enum": ["ok", "error", "timeout", "unsupported", "skipped"]},
+        "observed_at": {"type": ["string", "null"], "format": "date-time"},
+        "subject": {"enum": ["host", "actual_browser", "cli", "browser_cli_comparison", "user_input", "local_history"]},
+        "scope": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "limitations": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "evidence_refs": {"$ref": "#/$defs/id_list"}
+      },
+      "allOf": [{
+        "if": {"properties": {"measurement_status": {"const": "ok"}}, "required": ["measurement_status"]},
+        "then": {"properties": {"observed_at": {"type": "string", "format": "date-time"}}}
+      }]
+    },
+    "finding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "rule_id", "assessment", "observation_ids", "evidence_refs", "statement", "limitations", "next_step", "recheck"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "rule_id": {"type": "string", "minLength": 1},
+        "assessment": {"enum": ["needs_action", "needs_confirmation", "verified", "not_applicable", "unknown"]},
+        "observation_ids": {"$ref": "#/$defs/id_list"},
+        "evidence_refs": {"$ref": "#/$defs/id_list"},
+        "statement": {"type": "string", "minLength": 1},
+        "limitations": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "next_step": {"type": ["string", "null"]},
+        "recheck": {"type": ["string", "null"]}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "title", "source", "checked_at", "scope"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["official_policy", "official_disclosure", "measurement", "code_review", "third_party", "cohort", "community", "project_design"]},
+        "title": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "checked_at": {"type": ["string", "null"], "format": "date-time"},
+        "scope": {"type": "string", "minLength": 1}
+      }
+    },
+    "data_flow": {
+      "type": "object", "additionalProperties": false,
+      "required": ["purpose", "recipient", "fields", "sent"],
+      "properties": {
+        "purpose": {"type": "string", "minLength": 1},
+        "recipient": {"type": "string", "minLength": 1},
+        "fields": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "sent": {"type": "boolean"}
+      }
+    }
+  }
+}

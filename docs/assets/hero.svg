@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+<title id="title">知彼 Zhibi — 看懂风控，再做准备</title><desc id="desc">网络环境切换准备工具。公开证据、本地检查、可复查的指导。</desc>
+<rect width="1200" height="340" rx="10" fill="#183c34"/>
+<g stroke="#486859" fill="none" opacity=".8"><circle cx="1000" cy="167" r="137"/><circle cx="1000" cy="167" r="94"/><circle cx="1000" cy="167" r="48"/><path d="M830 167H1170M1000 15V319"/></g>
+<path d="M921 220L998 74L1093 192L1000 167Z" fill="#294e3d" stroke="#a0ba8b" stroke-width="1.5"/>
+<circle cx="921" cy="220" r="7" fill="#e79569"/><circle cx="998" cy="74" r="6" fill="#d2dfb9"/><circle cx="1093" cy="192" r="6" fill="#d2dfb9"/><circle cx="1000" cy="167" r="4" fill="#d2dfb9"/>
+<g font-family="monospace" fill="#b4c6ab" font-size="11" letter-spacing="2"><text x="864" y="263">OBSERVE</text><text x="967" y="42">EVIDENCE</text><text x="1094" y="226">ACT</text><text x="57" y="48">CLAUDE ACCOUNT PREPARATION</text></g>
+<text x="54" y="144" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="76" font-weight="600" fill="#f1f0de">知彼</text>
+<text x="241" y="141" font-family="'Avenir Next',sans-serif" font-size="63" font-weight="400" letter-spacing="-3" fill="#f1f0de">Zhibi</text>
+<text x="58" y="205" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="27" fill="#e7e8d7">看懂风控，再做准备。</text>
+<path d="M58 242H728" stroke="#486859"/>
+<g font-family="monospace" fill="#b4c6ab" font-size="12"><text x="58" y="279">LOCAL FIRST</text><text x="245" y="279">TRACEABLE EVIDENCE</text><text x="492" y="279">EXPLICIT UNKNOWNS</text></g>
+<rect x="1107" y="24" width="68" height="24" rx="2" fill="#d2dfb9"/><text x="1120" y="40" font-family="monospace" font-size="11" fill="#183c34">ALPHA</text>
+</svg>

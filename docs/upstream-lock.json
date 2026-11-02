@@ -1,0 +1,65 @@
+[
+  {
+    "project": "CCBaga",
+    "revision": "30a171f5191fbb65dc24e4b1a0392d998f7c5719",
+    "upstream_path": "src/browser-network.ts",
+    "upstream_sha256": "6e2cf010dcbd8937c3c8b78cf654e94cead424a9c05929f7d25a4d217ad288e7",
+    "adapted_path": "src/zhibi/assets/network-probe.js",
+    "license": "licenses/CCBaga-MIT.txt",
+    "status": "integrated"
+  },
+  {
+    "project": "CheckCC",
+    "revision": "078e7baa1d2a08df28da3f25dacb90e687f4c79f",
+    "upstream_path": "src/detection/client-engine.ts",
+    "upstream_sha256": "148aca773d2cf9a9815d0aa6cd68d356422703b540d5cef1c91a1747fee11ff7",
+    "adapted_path": "src/zhibi/assets/network-probe.js",
+    "license": "licenses/CheckCC-MIT.txt",
+    "status": "integrated"
+  },
+  {
+    "project": "CheckCC",
+    "revision": "078e7baa1d2a08df28da3f25dacb90e687f4c79f",
+    "upstream_path": "src/detection/client-engine.ts",
+    "upstream_sha256": "148aca773d2cf9a9815d0aa6cd68d356422703b540d5cef1c91a1747fee11ff7",
+    "adapted_path": "src/zhibi/assets/browser-details.js",
+    "license": "licenses/CheckCC-MIT.txt",
+    "status": "integrated"
+  },
+  {
+    "project": "CheckCC",
+    "revision": "078e7baa1d2a08df28da3f25dacb90e687f4c79f",
+    "upstream_path": "src/detection/scoring.ts",
+    "upstream_sha256": "2348dd0a7455d3ca87dcfa449f177c7046515998a2d2ff12400679b38b8438cd",
+    "adapted_path": "src/zhibi/checkcc_model.py",
+    "license": "licenses/CheckCC-MIT.txt",
+    "status": "integrated"
+  },
+  {
+    "project": "CheckCC",
+    "revision": "078e7baa1d2a08df28da3f25dacb90e687f4c79f",
+    "upstream_path": "src/regions/index.ts",
+    "upstream_sha256": "65ecd7f63dcfc22a38630677fda317bd87afc3ceaf4573ab23ab7a1a47abd369",
+    "adapted_path": "src/zhibi/checkcc_model.py",
+    "license": "licenses/CheckCC-MIT.txt",
+    "status": "integrated"
+  },
+  {
+    "project": "CheckCC",
+    "revision": "078e7baa1d2a08df28da3f25dacb90e687f4c79f",
+    "upstream_path": "src/detection/config/signals.ts",
+    "upstream_sha256": "5c0381dabeb1a1be4ef8a3b6c5a0fa23d7a25e9cd49132a80cf884d541ea705c",
+    "adapted_path": "src/zhibi/checkcc_model.py",
+    "license": "licenses/CheckCC-MIT.txt",
+    "status": "integrated"
+  },
+  {
+    "project": "CheckCC",
+    "revision": "078e7baa1d2a08df28da3f25dacb90e687f4c79f",
+    "upstream_path": "src/detection/client-engine.ts",
+    "upstream_sha256": "148aca773d2cf9a9815d0aa6cd68d356422703b540d5cef1c91a1747fee11ff7",
+    "adapted_path": "src/zhibi/checkcc_model.py",
+    "license": "licenses/CheckCC-MIT.txt",
+    "status": "integrated"
+  }
+]

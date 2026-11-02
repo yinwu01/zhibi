@@ -1,0 +1,195 @@
+[
+  {
+    "id": "eligibility",
+    "title": "真实资格背景",
+    "visibility": "user_declared",
+    "checks": [
+      "intake.context"
+    ],
+    "derivation": "真实场景与有时效的政策逐项对照。",
+    "counterexample": "IP 定位不等于实际使用地区。",
+    "validation": "人工核对来源、生效时间和目标产品；不采身份材料。",
+    "claim_ids": [
+      "policy-not-ip"
+    ]
+  },
+  {
+    "id": "route-comparability",
+    "title": "诊断端点路径一致性",
+    "visibility": "direct_local",
+    "checks": [
+      "browser.context",
+      "browser.egress",
+      "network.egress"
+    ],
+    "derivation": "比较同端点、地址族和相近时间的观测。",
+    "counterexample": "有意分流、不同目标、负载均衡、历史样本。",
+    "validation": "合成反例、实际浏览器复测；检测失败保留未知。",
+    "claim_ids": [
+      "route-not-ban"
+    ]
+  },
+  {
+    "id": "proxy-configuration",
+    "title": "代理配置入口",
+    "visibility": "direct_local",
+    "checks": [
+      "host.proxy"
+    ],
+    "derivation": "仅提取存在、认证存在、兼容性和冲突布尔量。",
+    "counterexample": "系统代理、透明网关与浏览器扩展不可由此排除。",
+    "validation": "在子进程或局部字典中注入冲突，再比较修正前后。",
+    "claim_ids": [
+      "proxy-scope"
+    ]
+  },
+  {
+    "id": "browser-context",
+    "title": "浏览器基础能力",
+    "visibility": "direct_local",
+    "checks": [
+      "browser.context"
+    ],
+    "derivation": "在实际打开的探针页观察 Cookie 启用和存储能力。",
+    "counterexample": "本地文件权限不等于 目标站点权限；旅行和多语言使用。",
+    "validation": "同浏览器人工复验，自动化浏览器只能验软件。",
+    "claim_ids": [
+      "locale-not-identity"
+    ]
+  },
+  {
+    "id": "client-readiness",
+    "title": "客户端可发现性",
+    "visibility": "direct_local",
+    "checks": [
+      "client.installed"
+    ],
+    "derivation": "当前 PATH 中程序是否存在。",
+    "counterexample": "网页版无需该客户端；新终端可有不同 PATH。",
+    "validation": "使用临时 PATH 场景验证，不运行登录命令。",
+    "claim_ids": [
+      "client-not-account"
+    ]
+  },
+  {
+    "id": "dns-scope",
+    "title": "DNS 配置覆盖",
+    "visibility": "direct_local",
+    "checks": [
+      "host.dns"
+    ],
+    "derivation": "统计指定配置文件中的解析器行数。",
+    "counterexample": "系统分流、DoH、文件截断或无文件。",
+    "validation": "验证解析器数目语义；不判定有效路径。",
+    "claim_ids": [
+      "dns-not-leak"
+    ]
+  },
+  {
+    "id": "ip-attribution",
+    "title": "第三方归属",
+    "visibility": "third_party",
+    "checks": [
+      "network.metadata"
+    ],
+    "derivation": "从显式开启的数据源读取国家/ASN。",
+    "counterexample": "数据库滞后、共享出口、供应商相互矛盾。",
+    "validation": "保留供应商、时间和冲突；不机械多数投票。",
+    "claim_ids": [
+      "metadata-not-policy"
+    ]
+  },
+  {
+    "id": "temporal-relations",
+    "title": "事件与关联",
+    "visibility": "partially_observable",
+    "checks": [
+      "history.context"
+    ],
+    "derivation": "仅连接用户已记录的事件、配置和来源。",
+    "counterexample": "共同出口、先后发生不等于同一人或因果。",
+    "validation": "限定观察窗、证据边、失访和未知身份。",
+    "claim_ids": [
+      "graph-boundary",
+      "account-graph-analogy"
+    ]
+  },
+  {
+    "id": "platform-behavior",
+    "title": "平台行为特征",
+    "visibility": "platform_hidden",
+    "checks": [],
+    "derivation": "仅整理官方披露的研究维度，不计算个人隐藏风险分。",
+    "counterexample": "正常高频用途与总体规模不同；没有全平台视角。",
+    "validation": "用公开资料审查范围，不能从本机复现平台标签。",
+    "claim_ids": [
+      "behavior-relations"
+    ]
+  },
+  {
+    "id": "outcome-separation",
+    "title": "结果标签与处置",
+    "visibility": "user_declared",
+    "checks": [],
+    "derivation": "将技术错误、验证、额度、支付、内容拒绝和账号限制分开。",
+    "counterexample": "HTTP 错误与账号状态、API 与网页错误不同。",
+    "validation": "以明确的阶段和枚举错误运行 triage，不导入原始认证响应。",
+    "claim_ids": [
+      "multiple-actions",
+      "bot-target-analogy",
+      "stage-specific-decision"
+    ]
+  },
+  {
+    "id": "payment-context",
+    "title": "付款阶段",
+    "visibility": "user_declared",
+    "checks": [],
+    "derivation": "只记录是否出现付款问题，不采集卡号或身份材料。",
+    "counterexample": "发卡行拒付、验证和平台限制不是同一问题。",
+    "validation": "引导在官方账单流程核对，禁止用本地环境分代替付款证据。",
+    "claim_ids": [
+      "payment-action-analogy"
+    ]
+  },
+  {
+    "id": "action-value",
+    "title": "建议价值",
+    "visibility": "research_only",
+    "checks": [],
+    "derivation": "关注理解度、正确分流、具体问题解决及无效变更。",
+    "counterexample": "幸存者偏差、选择偏差、回访缺失。",
+    "validation": "自愿用户实验与明确观察窗，不能用三个成功案例估计效果。",
+    "claim_ids": [
+      "uncertainty-helps-preparation"
+    ]
+  },
+  {
+    "id": "address-family",
+    "title": "地址族与端点覆盖",
+    "visibility": "direct_local",
+    "checks": [
+      "network.ipv6"
+    ],
+    "derivation": "只接受 IPv6 专用端点返回的有效公网 IPv6 地址。",
+    "counterexample": "HTTP 代理可以代替本机访问 IPv6 目标。",
+    "validation": "覆盖无 IPv6、代理出口、错误地址族与超时输入。",
+    "claim_ids": [
+      "ipv6-scope"
+    ]
+  },
+  {
+    "id": "public-connectivity",
+    "title": "连接错误所在层与 HTTP 结果",
+    "visibility": "direct_local",
+    "checks": [
+      "network.connectivity"
+    ],
+    "derivation": "固定公共首页 HEAD；分类解析、TLS、超时、传输错误或 HTTP 状态。",
+    "counterexample": "代理隐藏错误层次；HEAD 拒绝与浏览器 GET 可以不同。",
+    "validation": "模拟各类连接失败、403、重定向、正常响应；不读取正文。",
+    "claim_ids": [
+      "http-not-account"
+    ]
+  }
+]

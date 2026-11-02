@@ -1,0 +1,4 @@
+interface:
+  display_name: "知彼 · 检查与配置协助"
+  short_description: "主动检查实际网络环境，用 computer use 协助配置并复查"
+  default_prompt: "使用 $zhibi 检查我实际的网络环境，操作浏览器完成检测，协助处理已授权的问题，复查后打开报告。"

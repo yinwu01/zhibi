@@ -1,0 +1,13 @@
+include README.en.md CONTRIBUTING.md SECURITY.md CHANGELOG.md
+include start.html
+include THIRD_PARTY_NOTICES.md
+recursive-include licenses *.txt
+recursive-include docs *.md *.svg *.png
+recursive-include examples *.json *.html *.md
+recursive-include schemas *.json
+recursive-include skills *.md *.yaml *.py
+recursive-include templates *.md
+recursive-include tutorials *.md
+recursive-include knowledge *.md
+recursive-include scripts *.py
+recursive-include tests *.py *.cjs

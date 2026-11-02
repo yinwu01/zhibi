@@ -1,0 +1,21 @@
+name: 证据与规则纠错
+description: 提供来源更新、正常反例或可反驳的特征假设
+body:
+  - type: input
+    id: rule
+    attributes:
+      label: 涉及的规则或主张
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: 公开出处、版本及观察日期
+    validations:
+      required: true
+  - type: textarea
+    id: counterexample
+    attributes:
+      label: 证据支持什么、不能支持什么，以及正常反例
+    validations:
+      required: true

@@ -1,0 +1,138 @@
+[
+  {
+    "id": "policy.context",
+    "title": "注册条件与政策版本",
+    "checks": [
+      "intake.context"
+    ],
+    "sources": [
+      "appeals",
+      "regions"
+    ],
+    "motivation": "服务可用范围与账号资格",
+    "counterexample": "IP 归属与用户真实使用地区可以不同；IP 不能替代主体资格。",
+    "claim": "policy-not-ip"
+  },
+  {
+    "id": "network.route",
+    "title": "浏览器与命令行出口",
+    "checks": [
+      "browser.context",
+      "browser.egress",
+      "network.egress"
+    ],
+    "sources": [
+      "method",
+      "ipify"
+    ],
+    "motivation": "解释用户实际使用路径",
+    "counterexample": "有意分流、出口负载均衡和不同地址族都可以产生正常差异。",
+    "claim": "route-not-ban"
+  },
+  {
+    "id": "host.proxy",
+    "title": "代理配置可用性",
+    "checks": [
+      "host.proxy"
+    ],
+    "sources": [
+      "method"
+    ],
+    "motivation": "避免把工具配置故障当成账号限制",
+    "counterexample": "浏览器扩展、系统代理和企业网络不一定体现在环境变量里。",
+    "claim": "proxy-scope"
+  },
+  {
+    "id": "browser.context",
+    "title": "实际浏览器基础能力",
+    "checks": [
+      "browser.context"
+    ],
+    "sources": [
+      "method"
+    ],
+    "motivation": "确认登录所需基础浏览器能力的观测范围",
+    "counterexample": "本地探针页的存储权限不等于 目标站点权限；多语言用户很正常。",
+    "claim": "locale-not-identity"
+  },
+  {
+    "id": "client.installed",
+    "title": "客户端准备",
+    "checks": [
+      "client.installed"
+    ],
+    "sources": [
+      "method"
+    ],
+    "motivation": "区分安装问题与账号问题",
+    "counterexample": "只用网页版的用户无需安装 目标客户端。",
+    "claim": "client-not-account"
+  },
+  {
+    "id": "host.dns",
+    "title": "DNS 配置覆盖范围",
+    "checks": [
+      "host.dns"
+    ],
+    "sources": [
+      "method"
+    ],
+    "motivation": "避免把配置文件当作实际解析路径",
+    "counterexample": "浏览器安全 DNS、系统分流解析不一定出现在 resolv.conf。",
+    "claim": "dns-not-leak"
+  },
+  {
+    "id": "network.metadata",
+    "title": "IP 归属信息",
+    "checks": [
+      "network.metadata"
+    ],
+    "sources": [
+      "ipwhois",
+      "method"
+    ],
+    "motivation": "为网络观测补充来源明确的背景",
+    "counterexample": "运营商归属和数据库定位可能过时，无法证明用户实际地区。",
+    "claim": "metadata-not-policy"
+  },
+  {
+    "id": "history.coverage",
+    "title": "历史与关联信息",
+    "checks": [
+      "history.context"
+    ],
+    "sources": [
+      "method"
+    ],
+    "motivation": "防止用一次检查推断长期行为与全平台关联",
+    "counterexample": "共用一个出口不代表同一个人；一次成功也不代表长期稳定。",
+    "claim": "graph-boundary"
+  },
+  {
+    "id": "network.ipv6",
+    "title": "IPv6 端点可达性",
+    "checks": [
+      "network.ipv6"
+    ],
+    "sources": [
+      "method",
+      "ipify"
+    ],
+    "motivation": "识别地址族覆盖边界",
+    "counterexample": "代理出口具备 IPv6 不代表本机或浏览器有 IPv6；没有 IPv6 也不是账号风险。",
+    "claim": "ipv6-scope"
+  },
+  {
+    "id": "network.connectivity",
+    "title": "公共入口连通性",
+    "checks": [
+      "network.connectivity"
+    ],
+    "sources": [
+      "method"
+    ],
+    "motivation": "把连接问题与账号问题分开",
+    "counterexample": "公共首页 HEAD 返回 403 或重定向，不等于实际浏览器或账号无法使用。",
+    "claim": "http-not-account"
+  }
+]
