@@ -38,8 +38,8 @@ N1 受理 → N2 本机体检 → N3 远端体检 → N4 出计划 ═ G1 用户
 |---|---|---|
 | N1 受理 | 收齐两个输入：要跑的命令 + 服务器怎么连 | 一次提问，只问缺的 |
 | N2 本机体检 | 系统、Python、指纹浏览器在不在、能不能点按操作 | 一句话结论 |
-| N3 远端体检 | 服务器的时间、语言、时钟、解析器、资源 | 一句话结论 |
-| N4 出计划 | 合成"要改什么"和"浏览器要填什么" | **三行摘要 + 一句"要不要开始"** |
+| N3 远端体检 | 服务器的时间、语言、时钟、解析器、资源、对外身份 | 一句话结论 + 一个分数 |
+| N4 出计划 | 把发现合成分数、要改什么、浏览器要填什么 | **三行摘要 + 一句“要不要开始”** |
 | **G1** | 用户点头。**全程只需要这一次确认** | — |
 | N5 远端部署 | 让命令在后台常驻 + 对齐时间与语言 | 两句话：做了什么、现在什么状态 |
 | N6 本机浏览器 | 按服务器的读数反推浏览器该填什么并写入 | 两句话 |
@@ -57,6 +57,25 @@ N1 受理 → N2 本机体检 → N3 远端体检 → N4 出计划 ═ G1 用户
 3. 收一个文件夹
 
 其余全部由你完成。不要给用户逐步教程，不要让用户自己敲命令——除非宿主没有 computer use 能力，那时只交接无法自动完成的那一步。
+
+## 分数怎么用
+
+体检会给出一个 0–100 的分数和五个分项。**跟用户只说等级和人话，不要把分项字段名拌出来。**
+
+| 分项 | 人话叫法 | 看什么 |
+|---|---|---|
+| egress | 对外身份 | 这条线路是家庭宽带还是机房 |
+| consistency | 内部一致性 | 时间、语言、时钟对不对得上 |
+| leakage | 泄漏 | 解析和浏览器会不会把真实位置漏出去 |
+| reputation | 信誉读数 | 情报源给的分（可选，不查就是未测） |
+| stability | 稳定性 | 程序在不在跑、重启会不会自己起 |
+
+规则：
+
+- **覆盖率低于 50% 不给等级**，只说“证据不足”。
+- **未测项不计入分数**，也不当通过，要单独列出来。
+- 分数只能描述“这次测到的项”，不能说成账号安全、不能预测结果。
+- 高风险项要一一条给出“为什么”和“能不能修”。
 
 ## Computer Use
 
@@ -91,12 +110,12 @@ N1 受理 → N2 本机体检 → N3 远端体检 → N4 出计划 ═ G1 用户
 ## 命令
 
 ```bash
-python3 <this-skill>/scripts/zhibi.py check  --host <host>                  # N3
-python3 <this-skill>/scripts/zhibi.py build  --host <host> --command "..."   # N5，默认只出计划
-python3 <this-skill>/scripts/zhibi.py browse --host <host>                   # N6
-python3 <this-skill>/scripts/zhibi.py accept --host <host>                   # N7
-python3 <this-skill>/scripts/zhibi.py deliver --host <host>                  # N8
-python3 <this-skill>/scripts/zhibi.py doctor                                 # N2
+python3 <this-skill>/scripts/zhibi.py check  --host <host> --egress             # N3，--egress 才查对外身份
+python3 <this-skill>/scripts/zhibi.py build  --host <host> --command "..."      # N5，默认只出计划
+python3 <this-skill>/scripts/zhibi.py browse --host <host>                      # N6
+python3 <this-skill>/scripts/zhibi.py accept --host <host> --egress --unit ...  # N7
+python3 <this-skill>/scripts/zhibi.py deliver --host <host> --egress --unit ... # N8
+python3 <this-skill>/scripts/zhibi.py doctor                                    # N2
 ```
 
 `build` 默认只打印计划，加 `--apply` 才真正执行。密钥与服务器地址只在本机使用，不上传、不外发。

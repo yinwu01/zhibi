@@ -20,7 +20,7 @@
 
 日期：2026-10-19。版本：0.2.0a2。本地 macOS 验收；已在私有 GitHub 分发，无 PyPI 发布或成功云端 CI 结果。
 
-本轮完整链路见[GitHub 下载与免 Key 实测](onboarding-validation.md)。
+本轮完整链路见[GitHub 下载与免 Key 实测](../archive/onboarding-validation.md)。
 
 ## 当前交付与证据
 
@@ -73,7 +73,7 @@ python scripts/package_release.py
 ```
 
 高级浏览器 UI 测试从 `.preview/network.html` 读取页面；运行前应使用高级探针命令导出到该路径。
-开发依赖、Playwright 与本机浏览器选择见 [贡献指南](../CONTRIBUTING.md)。
+开发依赖、Playwright 与本机浏览器选择见 [贡献指南](../../CONTRIBUTING.md)。
 默认验收不执行外部 API 或 DNS 请求；真实请求单独运行并记录，不进入公开示例。
 
 ## 历史：0.1 基础版
@@ -140,7 +140,7 @@ python scripts/verify_distribution.py
 python scripts/package_release.py
 ```
 
-浏览器验收需要开发环境中的 Playwright 与浏览器，详见 [贡献指南](../CONTRIBUTING.md)。
+浏览器验收需要开发环境中的 Playwright 与浏览器，详见 [贡献指南](../../CONTRIBUTING.md)。
 外部真实请求不是自动化测试的默认步骤。
 
 ## 对当前交付的核对

@@ -131,7 +131,7 @@ CheckCC 源码当前的 16 个配置 ID 与本清单对应如下，避免只看 
 
 v0.3.0a2 已提供 `modules`、`suite --preset all` 和实际浏览器 `session`。全量指已接入的只读模块，并不表示本表所有部分项已完成。维护动作不会由全量检测触发。
 
-本轮细节与实测边界：[可选工具](../tutorials/optional-modules.md)、[环境维护](../tutorials/environment-maintenance.md)、[验收记录](full-coverage-validation.md)。
+本轮细节与实测边界：[可选工具](../archive/tutorials/optional-modules.md)、[环境维护](../archive/tutorials/environment-maintenance.md)、[验收记录](../research/full-coverage-validation.md)。
 
 `未选择`、`未配置`、`暂不支持该平台`、`尚未实现`、`执行失败`和`检查发现问题`必须区别显示。用户未选模块不算失败；用户选择的未实现模块必须明确承认缺口，不能说“没有必要，所以不测”。
 

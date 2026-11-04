@@ -36,11 +36,11 @@ zhibi compare /tmp/zhibi-before/report.json /tmp/zhibi-after/report.json
 
 ## 增加一个检查时改哪里
 
-1. 在 [特征目录源数据](../src/zhibi/data/features.json) 定义对象、可见范围、正常反例和验证方法。
-2. 在 [主张库](../src/zhibi/data/claims.json) 定义范围与反驳条件；未验证的平台假设保持 proposed。
-3. 在 [models.py](../src/zhibi/models.py) 增加最小字段契约，在 [checks.py](../src/zhibi/checks.py) 实现观测。
-4. 若要联网，先扩充 [transport.py](../src/zhibi/transport.py) 白名单和 `plan`；默认关闭、固定接收方、无凭据。
-5. 添加 [规则](../src/zhibi/data/rules.json) 和受控处理器；研究材料不能动态执行代码。
+1. 在 [特征目录源数据](../../../src/zhibi/data/features.json) 定义对象、可见范围、正常反例和验证方法。
+2. 在 [主张库](../../../src/zhibi/data/claims.json) 定义范围与反驳条件；未验证的平台假设保持 proposed。
+3. 在 [models.py](../../../src/zhibi/models.py) 增加最小字段契约，在 [checks.py](../../../src/zhibi/checks.py) 实现观测。
+4. 若要联网，先扩充 [transport.py](../../../src/zhibi/transport.py) 白名单和 `plan`；默认关闭、固定接收方、无凭据。
+5. 添加 [规则](../../../src/zhibi/data/rules.json) 和受控处理器；研究材料不能动态执行代码。
 6. 只为有意义的正确性边界补测试：正常反例、失败、隐私、证据失效、输出和导出。
 
 不要为了“凑特征”采集更多私密资料。没有可执行建议的特征可以先留在研究层。
@@ -56,4 +56,4 @@ python -m build
 python scripts/verify_distribution.py
 ```
 
-浏览器视觉验收见 [验证记录](../docs/validation.md)。CI 使用合成输入，不调用真实账号和外部诊断服务。
+浏览器视觉验收见 [验证记录](../../architecture/validation.md)。CI 使用合成输入，不调用真实账号和外部诊断服务。

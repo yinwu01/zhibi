@@ -1,25 +1,61 @@
-"""五步主线的上层编排：看、建、配、验、交。只调 remote 与本地能力，不新增测量逻辑。"""
+"""五步主线的上层编排：看、建、配、验、交。评分与交付都在这层完成。"""
 import json
 import os
-import shutil
+from html import escape
 from pathlib import Path
 
-from . import remote
+from . import remote, score as scoring
 from .models import InputError, now
 from .storage import create_run, write
 
 STEPS = ("check", "build", "browse", "accept", "deliver")
+LEVEL_COLOR = {"low": "#2f7d4f", "medium": "#a97b16", "high": "#a53a2a", "insufficient": "#5b6470"}
 
 
 def _target(args):
     return remote.target(args.host, args.user, args.port, args.identity)
 
 
+def _egress(facts):
+    org = (facts.get("egress_org") or "").strip()
+    return {"ip": (facts.get("egress_ip") or "").strip() or None,
+            "org": org or None,
+            "datacenter": scoring.looks_datacenter(org) if org else None}
+
+
+def _dns(facts):
+    nameservers = [n for n in (facts.get("nameservers") or "").split() if n]
+    return {"nameservers": nameservers, "public": remote.PUBLIC_DNS}
+
+
+def _headline(result):
+    """Three plain sentences for the user. No jargon."""
+    s = result["score"]
+    if s["level"] == "insufficient":
+        first = "这次能确认的东西还太少，先不下结论。"
+    else:
+        first = "总体判断：%s（%d 分，覆盖 %d%% 的检查项）。" % (s["label"], s["score"], s["coverage"])
+    issues = [d for d in s["dimensions"] if d["state"] in ("fail", "warn")]
+    if issues:
+        second = "需要处理的：" + "；".join(d["label"] for d in issues) + "。"
+    else:
+        second = "已经测到的项目里，没有需要处理的问题。"
+    labels = {d["id"]: d["label"] for d in s["dimensions"]}
+    missing = [labels.get(key, key) for key in s["unmeasured"]]
+    third = ("这几项还没测：" + "、".join(missing) + "，所以它们不算通过。") if missing else "全部检查项都已测到。"
+    return [first, second, third]
+
+
 def check(args):
     item = _target(args)
-    facts = remote.check(item)
-    return {"step": "check", "host": item["host"], "facts": facts,
-            "findings": remote.findings(facts), "at": now()}
+    facts = remote.check(item, egress=getattr(args, "egress", False))
+    result_score = scoring.score(egress=_egress(facts), facts=facts,
+                                 expect_tz=args.timezone, expect_locale=args.locale,
+                                 dns=_dns(facts))
+    result = {"step": "check", "host": item["host"], "facts": facts,
+              "findings": remote.findings(facts), "score": result_score,
+              "headline": _headline({"score": result_score}), "at": now()}
+    return result
 
 
 def build(args):
@@ -34,13 +70,27 @@ def build(args):
                                    args.restart, args.memory_mb, args.cpu_percent,
                                    apply=args.apply)
     result = {"step": "build", "host": item["host"], "before": facts,
-              "alignment": plan, "service": wrapped, "applied": bool(args.apply)}
+              "alignment": plan, "service": wrapped, "applied": bool(args.apply),
+              "summary": _build_summary(plan, wrapped, bool(args.apply))}
     if args.apply:
         for step in plan:
             outcome = remote.execute(item, "set -e\n" + step["command"])
             step["applied"] = outcome["state"] == "ok"
         result["after"] = remote.check(item)
     return result
+
+
+def _build_summary(plan, wrapped, applied):
+    lines = []
+    if plan:
+        lines.append("要改 %d 处：" % len(plan) + "、".join(
+            {"timezone": "调整时间", "locale": "调整语言"}.get(s["id"], s["id"]) for s in plan))
+    else:
+        lines.append("时间与语言不需要改动。")
+    if wrapped:
+        state = "已经启动" if applied and wrapped.get("applied") else "还没启动"
+        lines.append("你的命令会被交给系统托管，关机重启后自己起来（%s）。" % state)
+    return " ".join(lines)
 
 
 PATCH_FIELDS = ("timezone", "language", "webrtc")
@@ -61,43 +111,53 @@ def browse(args):
     if language:
         patch["language"] = [language]
     patch["webrtc"] = "proxy"
-    return {"step": "browse", "host": item["host"], "source_facts": facts,
-            "patch": patch,
+    return {"step": "browse", "host": item["host"], "source_facts": facts, "patch": patch,
             "fields": [
-                {"field": "时区", "value": timezone, "why": "和服务器认为的时间一致"},
+                {"field": "时区（时间）", "value": timezone, "why": "和服务器认为的时间一致"},
                 {"field": "语言", "value": language, "why": "和系统语言一致"},
                 {"field": "网络通道", "value": "服务器", "why": "让浏览器从这里出去"},
                 {"field": "WebRTC", "value": "跟随通道", "why": "堵住会把本地位置漏出去的便道"},
             ],
-            "notice": "这些是浏览器里要填的值；填完必须关掉浏览器再重开，然后重新读数才算生效。"}
+            "notice": "填完必须关掉浏览器再重开，然后重新测一遍才算生效。"}
 
 
 def accept(args):
-    """两端逐项对撞。没有本地读数时，本机项记为未测量，不记为通过。"""
+    """两端逐项对撞并重新评分。没有本地读数时，本机项记为未测量。"""
     item = _target(args)
-    facts = remote.check(item)
-    unit_state = None
+    facts = remote.check(item, egress=getattr(args, "egress", False))
+    unit_state = enabled = None
     if args.unit:
         outcome = remote.execute(item, "systemctl is-active " + args.unit)
         unit_state = outcome["value"].strip() if outcome["state"] == "ok" else None
+        outcome = remote.execute(item, "systemctl is-enabled " + args.unit)
+        enabled = outcome["value"].strip() == "enabled" if outcome["state"] == "ok" else None
     far = remote.verify(facts, args.timezone, args.locale, args.unit, unit_state)
-    near = []
-    local = None
+    local_readings = {}
     if args.browser:
         from .browser import parse_bundle
-        local = parse_bundle(__import__("json").loads(open(args.browser, encoding="utf-8").read()))
-    for key, expect in (("timezone", args.timezone), ("language", args.language),
-                        ("egress", "server"), ("webrtc", "no local leak")):
-        measured = local.get(key) if isinstance(local, dict) else None
-        state = "not_measured" if measured is None else ("ok" if str(measured) == str(expect) else "fail")
+        with open(args.browser, encoding="utf-8") as handle:
+            local_readings = parse_bundle(json.load(handle)) or {}
+    near = []
+    for key, expect, measured in (
+            ("时区", args.timezone, local_readings.get("timezone")),
+            ("语言", args.language, local_readings.get("language")),
+            ("对外身份", facts.get("egress_ip"), local_readings.get("egress_ip")),
+            ("泄漏", "无", "有" if local_readings.get("webrtc_leak") else None)):
+        state = "not_measured" if measured in (None, "") else ("ok" if str(measured) == str(expect) else "fail")
         near.append({"key": key, "expected": expect, "measured": measured, "state": state})
+    result_score = scoring.score(
+        egress=_egress(facts), facts=facts, expect_tz=args.timezone, expect_locale=args.locale,
+        dns=_dns(facts), webrtc={"leak": local_readings.get("webrtc_leak")},
+        service={"active": unit_state == "active" if unit_state else None,
+                 "enabled": enabled})
     return {"step": "accept", "host": item["host"], "remote": far, "local": near,
+            "score": result_score, "headline": _headline({"score": result_score}),
             "notice": "远端与本地分开计数；未测量的项不计入通过。"}
 
 
 FIRST_READ = """# 先读我
 
-这份文件夹是这次环境搭建的记录。
+这份文件夹是这次搭建留下的记录。
 
 ## 现在是什么状态
 
@@ -115,7 +175,7 @@ FIRST_READ = """# 先读我
 
 | 文件 | 内容 |
 | --- | --- |
-| 报告.html | 完整技术细节，双击就能看 |
+| 报告.html | 完整细节，双击就能看 |
 | remote.md | 服务器上改了什么、日志在哪看 |
 | browser.md | 浏览器每个字段填了什么、为什么 |
 | verification.json | 两端读数与逐项结果 |
@@ -124,41 +184,97 @@ FIRST_READ = """# 先读我
 """
 
 
-def deliver(args):
-    """把本次结果写成用户能留住的文件夹。"""
-    item = _target(args)
-    facts = remote.check(item)
-    unit_state = None
-    if args.unit:
-        outcome = remote.execute(item, "systemctl is-active " + args.unit)
-        unit_state = outcome["value"].strip() if outcome["state"] == "ok" else None
-    far = remote.verify(facts, args.timezone, args.locale, args.unit, unit_state)
-    destination = Path(os.path.expanduser(args.out or "~/Desktop")).absolute() / (
-        "zhibi-" + item["host"].replace(".", "-") + "-" + now()[:10])
-    if destination.exists():
-        raise InputError("目标文件夹已存在，请换一个输出目录。")
-    destination.mkdir(parents=True, mode=0o700)
-    counts = far["counts"]
-    summary = ("远端各项已按要求确认。" if not counts.get("fail") and not counts.get("not_measured")
-               else "有 %d 项没通过、%d 项没测，具体见报告。" % (counts.get("fail", 0), counts.get("not_measured", 0)))
+def render_html(report):
+    """One self-contained page. Full detail lives here, not in the chat."""
+    s = report["score"]
+    rows = "".join(
+        "<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td></tr>" % (
+            escape(d["label"]), escape(d["state"]), d["score"],
+            escape(" ".join(d["reasons"]) or "—"))
+        for d in s["dimensions"])
+    checks = "".join(
+        "<tr><td>%s</td><td>%s</td><td>%s</td></tr>" % (
+            escape(str(c.get("key"))), escape(str(c.get("measured"))), escape(c.get("state", "")))
+        for c in (report.get("remote") or {}).get("checks", []))
+    facts = "".join("<tr><td>%s</td><td>%s</td></tr>" % (escape(k), escape(str(v)))
+                    for k, v in sorted((report.get("facts") or {}).items()))
+    color = LEVEL_COLOR.get(s["level"], "#5b6470")
+    return """<!doctype html><html lang="zh"><meta charset="utf-8">
+<title>环境准备记录</title>
+<style>
+body{{font:15px/1.7 -apple-system,system-ui,sans-serif;max-width:820px;margin:40px auto;padding:0 20px;color:#222}}
+h1{{font-size:22px;margin:0 0 4px}} .sub{{color:#666;font-size:13px}}
+.badge{{display:inline-block;padding:6px 14px;border-radius:14px;color:#fff;background:{color};font-size:17px;margin:14px 0}}
+table{{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}}
+th,td{{border-bottom:1px solid #e6e6e6;padding:7px 8px;text-align:left;vertical-align:top}}
+th{{color:#666;font-weight:600}} .muted{{color:#777;font-size:13px}}
+</style>
+<h1>环境准备记录</h1>
+<div class="sub">{host} · {at}</div>
+<div class="badge">{label} · {score} 分 · 覆盖 {coverage}%</div>
+<h2>分项</h2>
+<table><tr><th>项目</th><th>状态</th><th>得分</th><th>依据</th></tr>{rows}</table>
+<h2>逐项核对</h2>
+<table><tr><th>项目</th><th>实测</th><th>状态</th></tr>{checks}</table>
+<h2>服务器读数</h2>
+<table>{facts}</table>
+<p class="muted">{notice}</p>
+</html>""".format(color=color, host=escape(str(report.get("host", ""))),
+                 at=escape(str(report.get("at", ""))), label=escape(s["label"]),
+                 score=s["score"], coverage=s["coverage"], rows=rows, checks=checks,
+                 facts=facts, notice=escape(s["notice"]))
+
+
+def deliver_files(destination, report, unit=None, timezone=None, locale=None, facts=None):
+    """Write the folder the user keeps. Pure file work, no network."""
+    destination = Path(destination)
+    destination.mkdir(parents=True, mode=0o700, exist_ok=False)
+    s = report["score"]
+    summary = "；".join(report.get("headline") or [s["label"]])
     write(destination / "先读我.md", FIRST_READ.format(
-        summary=summary, stop="systemctl stop " + (args.unit or "<服务名>")))
-    write(destination / "verification.json", far)
-    write(destination / "remote.md", "# 服务器上做了什么\n\n" + json.dumps(facts, ensure_ascii=False, indent=2) + "\n")
+        summary=summary, stop="systemctl stop " + (unit or "<服务名>")))
+    write(destination / "报告.html", render_html(report))
+    write(destination / "verification.json", report)
+    write(destination / "remote.md", "# 服务器上做了什么\n\n" + json.dumps(
+        report.get("facts") or facts or {}, ensure_ascii=False, indent=2) + "\n")
     write(destination / "browser.md", "# 浏览器要填什么\n\n" + json.dumps(
-        {"时区": args.timezone or facts.get("tz"),
-         "语言": args.locale or facts.get("lc_all") or facts.get("lang")}, ensure_ascii=False, indent=2) + "\n")
-    write(destination / "reproduce.sh", "#!/bin/sh\nset -e\nzhibi check --host " + item["host"] + "\n")
+        {"时区": timezone, "语言": locale, "WebRTC": "跟随通道"}, ensure_ascii=False, indent=2) + "\n")
+    write(destination / "reproduce.sh", "#!/bin/sh\nset -e\nzhibi check --host "
+          + str(report.get("host", "")) + " --egress\n")
     write(destination / "rollback.sh", "#!/bin/sh\nset -e\n"
-          + ("systemctl disable --now " + args.unit + "\n" if args.unit else "")
-          + "echo '其余改动按 remote.md 中的回滚命令逐条执行。'\n")
+          + ("systemctl disable --now " + unit + "\n" if unit else "")
+          + "echo '其余改动按 remote.md 的回滚命令逐条执行。'\n")
     if os.name == "posix":
         for name in ("reproduce.sh", "rollback.sh"):
             os.chmod(destination / name, 0o700)
+    return destination
+
+
+def deliver(args):
+    item = _target(args)
+    facts = remote.check(item, egress=getattr(args, "egress", False))
+    unit_state = enabled = None
+    if args.unit:
+        outcome = remote.execute(item, "systemctl is-active " + args.unit)
+        unit_state = outcome["value"].strip() if outcome["state"] == "ok" else None
+        outcome = remote.execute(item, "systemctl is-enabled " + args.unit)
+        enabled = outcome["value"].strip() == "enabled" if outcome["state"] == "ok" else None
+    far = remote.verify(facts, args.timezone, args.locale, args.unit, unit_state)
+    result_score = scoring.score(
+        egress=_egress(facts), facts=facts, expect_tz=args.timezone, expect_locale=args.locale,
+        dns=_dns(facts),
+        service={"active": unit_state == "active" if unit_state else None, "enabled": enabled})
+    report = {"host": item["host"], "at": now(), "facts": facts, "score": result_score,
+              "remote": far, "headline": _headline({"score": result_score})}
+    base = Path(os.path.expanduser(args.out or "~/Desktop")).absolute()
+    folder = base / ("zhibi-" + item["host"].replace(".", "-") + "-" + now()[:10])
+    if folder.exists():
+        raise InputError("目标文件夹已存在，请换一个输出目录。")
+    destination = deliver_files(folder, report, args.unit, args.timezone, args.locale, facts)
     session = create_run(None)
-    write(session / "verification.json", far)
-    return {"step": "deliver", "directory": str(destination), "counts": counts,
-            "session": str(session), "notice": summary}
+    write(session / "report.json", report)
+    return {"step": "deliver", "directory": str(destination), "score": result_score,
+            "headline": report["headline"], "session": str(session)}
 
 
 def dispatch(args):
@@ -167,10 +283,10 @@ def dispatch(args):
 
 
 def register(sub):
-    for name, text in (("check", "看服务器现状，不改任何东西"),
+    for name, text in (("check", "看服务器现状并给出评分，不改任何东西"),
                        ("build", "让命令常驻并对齐时间与语言；默认只出计划"),
                        ("browse", "算出指纹浏览器该填什么"),
-                       ("accept", "两端逐项对撞验收"),
+                       ("accept", "两端逐项对撞并重新评分"),
                        ("deliver", "把结果写成一个能留住的文件夹")):
         p = sub.add_parser(name, help=text)
         p.add_argument("--host", required=True, help="服务器地址")
@@ -181,6 +297,8 @@ def register(sub):
         p.add_argument("--locale", help="目标 locale，例如 en_US.UTF-8")
         p.add_argument("--unit", help="服务名")
         p.add_argument("--out", help="交付目录，默认桌面")
+        p.add_argument("--egress", action="store_true",
+                       help="允许服务器发起两次查询以取得自己的对外身份（可选）")
         if name == "build":
             p.add_argument("--command", help="要长期运行的命令，由用户提供，原样使用")
             p.add_argument("--run-user", default="root")

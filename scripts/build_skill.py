@@ -40,7 +40,7 @@ def build(destination=None):
         notice = ROOT / "THIRD_PARTY_NOTICES.md"
         if notice.exists():
             add(archive, "zhibi/THIRD_PARTY_NOTICES.md", notice.read_bytes())
-            add(archive, "zhibi/docs/upstream-lock.json", (ROOT / "docs/upstream-lock.json").read_bytes())
+            add(archive, "zhibi/docs/research/upstream-lock.json", (ROOT / "docs/research/upstream-lock.json").read_bytes())
         for path in sorted((ROOT / "licenses").glob("*")):
             if path.is_file():
                 add(archive, "zhibi/licenses/" + path.name, path.read_bytes())

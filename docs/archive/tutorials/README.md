@@ -13,4 +13,4 @@
 | 处理具体连接或账号页面错误 | [异常排查](troubleshooting.md) |
 | 提供或查阅作者真实流程 | [作者实践专区](author/README.md)，详细流程待补 |
 
-研究和开发资料：[研究方法](research.md) · [理论框架](../docs/theory/README.md) · [开发者实验](developer-walkthrough.md)。这些不是新用户必读步骤。
+研究和开发资料：[研究方法](research.md) · [理论框架](../../research/theory/README.md) · [开发者实验](developer-walkthrough.md)。这些不是新用户必读步骤。

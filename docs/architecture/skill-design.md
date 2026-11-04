@@ -1,6 +1,6 @@
 # Skill 入口设计
 
-状态：Skill 资源和配套 CLI 已实现。入口为 [SKILL.md](../skills/zhibi/SKILL.md)。资源结构与命令链路已本地验证；各宿主自动发现与真实交互仍待验收。
+状态：Skill 资源和配套 CLI 已实现。入口为 [SKILL.md](../../skills/zhibi/SKILL.md)。资源结构与命令链路已本地验证；各宿主自动发现与真实交互仍待验收。
 
 ## 触发任务
 

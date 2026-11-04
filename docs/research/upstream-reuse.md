@@ -7,7 +7,7 @@ v0.2.0a3 又将 CheckCC 同一文件的固定字体探测与浏览器/设备标�
 新增六组独立开关，全部无需 Key、只在本地处理；26 个候选字体采用三种回退字体的文字宽度对比。
 UA/设备、运行容器、Emoji 系列保留自报或推断性质，中文字体和语言不直接计为风险。
 验收包含 `tests/browser-details.cjs` 的纯逻辑测试及 `tests/test_browser_details.py` 的导入、隐私、报告测试。
-原始许可见 [第三方通知](../THIRD_PARTY_NOTICES.md)，固定源文件哈希见 [upstream-lock.json](upstream-lock.json)。
+原始许可见 [第三方通知](../../THIRD_PARTY_NOTICES.md)，固定源文件哈希见 [upstream-lock.json](upstream-lock.json)。
 未创建 GitHub fork；未引入桌面 UI、浏览器引擎或 IPQuality 的 AGPL 代码。下表未明确接入的部分仍是候选。
 
 本记录将对话中的 CC checker 按此前讨论的 **yacuo/check-cc（CheckCC）** 核对。
@@ -25,7 +25,7 @@ UA/设备、运行容器、Emoji 系列保留自报或推断性质，中文字�
 
 因此，本轮保留已复用的 MIT 采集与出口验证代码，没有把不存在的信誉后端说成已经 fork。
 新增的 ProxyCheck v3、IPQuery、StopForumSpam 适配器由知彼独立实现，直接调用各服务公开 API。
-其能力与费用详见 [供应商教程](../tutorials/providers.md)。未复制其他项目的共享 Key、未抓取检测网站的登录态。
+其能力与费用详见 [供应商教程](../archive/tutorials/providers.md)。未复制其他项目的共享 Key、未抓取检测网站的登录态。
 服务接口的可调用性和数据授权独立于这两个项目的 MIT 许可。
 
 ## 原则与结构
@@ -90,10 +90,10 @@ CheckCC 的 `scoring.ts` 按地区画像对国家、时区、语言、locale、�
 复制代码、直接调用已安装工具和维护 fork 都是可选实现方式，不保证任意一项都更轻量。
 采用第三方服务或数据库时，源码许可证与服务使用权分开核对。
 
-[Skill 两种模式](../tutorials/skill.md) · [IP 情报方案](ip-intelligence.md) · [实现进度](roadmap.md)
+[Skill 两种模式](../archive/tutorials/skill.md) · [IP 情报方案](../reference/ip-intelligence.md) · [实现进度](../product/roadmap.md)
 
 ## v0.3 实际交付与未覆盖部分
 
 CheckCC 六特征地区模型和十个客户端加权信号已移植到 `checkcc_model.py`，保留固定提交、MIT 与输入缺失状态。CCBaga 新提交 `bdfb90c` 的系统/CLI/身份/网络交付逻辑已逐项审查：本轮的维护、工作目录备份、AdsPower API、Mihomo/SSH 交付为独立实现，并未复制其 root Debian 部署脚本。IPQuality 仅用于能力对照，未并入 AGPL 源码。
 
-当前接入方式、可选依赖和仍未完成的子项见[覆盖表](capability-coverage.md)，真实运行与夹具测试分别记录在[验收记录](full-coverage-validation.md)。所有对外服务有自己的服务条款；源码 MIT 不等于取得商业数据使用权。
+当前接入方式、可选依赖和仍未完成的子项见[覆盖表](../architecture/capability-coverage.md)，真实运行与夹具测试分别记录在[验收记录](full-coverage-validation.md)。所有对外服务有自己的服务条款；源码 MIT 不等于取得商业数据使用权。

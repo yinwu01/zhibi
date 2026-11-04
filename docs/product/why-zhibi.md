@@ -22,4 +22,4 @@
 
 ---
 
-[立即使用基础版](../README.md#立即使用基础版) · [六层风控框架](risk-layers.md) · [检测原理](ip-intelligence.md) · [上游复用](upstream-reuse.md) · [作者实操教程](../tutorials/author/README.md)
+[立即使用基础版](../../README.md#立即使用基础版) · [六层风控框架](../reference/risk-layers.md) · [检测原理](../reference/ip-intelligence.md) · [上游复用](../research/upstream-reuse.md) · [作者实操教程](../archive/tutorials/author/README.md)

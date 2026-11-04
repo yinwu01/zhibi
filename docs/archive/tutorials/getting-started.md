@@ -1,6 +1,6 @@
 # 深入检查：使用命令行
 
-只想先检查当前浏览器？下载并打开 [start.html](../start.html)，点击“开始检查”即可。
+只想先检查当前浏览器？下载并打开 [start.html](../../../start.html)，点击“开始检查”即可。
 本教程面向需要检查电脑配置、比较不同入口或使用完整报告的用户，需要 Python。
 
 本教程演示软件使用。实际注册资料、验证和账号决定均在官方服务完成。
@@ -31,7 +31,7 @@ zhibi demo
 
 ## 1. 说明使用场景
 
-复制 [profile.json](../examples/profile.json)，按需要填写：
+复制 [profile.json](../../../examples/profile.json)，按需要填写：
 
 ```json
 {"product":"web","stage":"registration","country_code":null,"route_intent":"unknown"}

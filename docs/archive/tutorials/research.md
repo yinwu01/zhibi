@@ -11,7 +11,7 @@
 
 ## 写一个能被反驳的特征主张
 
-使用 [特征卡](../templates/feature-card.md)。每张卡至少包括：
+使用 [特征卡](../../../templates/feature-card.md)。每张卡至少包括：
 
 - 原始公开来源、版本、核对日与生效日。
 - 用户可见读数，以及平台可能看到但我们看不到的部分。
@@ -43,9 +43,9 @@
 
 作者于 2026 年 10 月 18 日自述已开通并稳定使用三个 20x Max 账号。
 具体过程、注册日期、使用时长与逐账号观察记录尚未提供。
-分别使用 [案例模板](../templates/case-study.md) 记录；未知字段留空。
+分别使用 [案例模板](../../../templates/case-study.md) 记录；未知字段留空。
 教程可按“当时遇到的问题 → 我掌握的证据 → 做过什么 → 观察到什么 → 还有哪些替代解释”展开。
 不要补写未发生的操作或把三次经验换算成防封效果。
 
-继续读 [知彼理论框架](../docs/theory/README.md)，或运行 `zhibi learn evidence`。
+继续读 [知彼理论框架](../../research/theory/README.md)，或运行 `zhibi learn evidence`。
 作者第一人称连载已预留在 [作者教程](author/README.md)。

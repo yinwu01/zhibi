@@ -35,6 +35,13 @@ printf 'mem_mb=%s\n' "$(awk '/MemTotal/{printf "%d", $2/1024}' /proc/meminfo 2>/
 printf 'utc=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 """
 
+EGRESS = r"""set -e
+ip=$(curl -s --max-time 6 https://api.ipify.org 2>/dev/null || wget -qO- --timeout=6 https://api.ipify.org 2>/dev/null || echo '')
+printf 'egress_ip=%s\n' "$ip"
+org=$(curl -s --max-time 6 https://ipinfo.io/org 2>/dev/null || echo '')
+printf 'egress_org=%s\n' "$org"
+"""
+
 PUBLIC_DNS = {"8.8.8.8", "8.8.4.4", "1.1.1.1", "1.0.0.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"}
 
 
@@ -97,11 +104,18 @@ def parse_facts(text):
     return facts
 
 
-def check(item):
+def check(item, egress=False):
+    """Read remote facts. Egress is opt-in: it makes two outbound requests from the server."""
     outcome = execute(item, FACTS)
     if outcome["state"] != "ok":
         raise InputError("无法读取远端状态；请确认地址、端口、凭据与首次指纹核对。")
     facts = parse_facts(outcome["value"])
+    if egress:
+        extra = execute(item, EGRESS, timeout=30)
+        if extra["state"] == "ok":
+            facts.update(parse_facts(extra["value"]))
+        else:
+            facts["egress_ip"] = ""
     if "tz" not in facts:
         raise InputError("远端返回内容不完整；本机判定为失败，不记为通过。")
     return facts

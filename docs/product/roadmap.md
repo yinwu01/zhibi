@@ -6,7 +6,7 @@
 
 ## 验收基线
 
-[能力覆盖清单](capability-coverage.md)逐项列出已审查上游的能力、当前覆盖与依赖，后续每发现一个新项目继续补充。
+[能力覆盖清单](../architecture/capability-coverage.md)逐项列出已审查上游的能力、当前覆盖与依赖，后续每发现一个新项目继续补充。
 只有实际可运行、能进入统一报告并完成相应验证的功能才算接入。宣传中的功能数量、计划中的模块和外链都不等于实现。
 
 ## 当前具备
@@ -17,7 +17,7 @@
 - 语言/时区/locale/UA 等部分浏览器采集；来源冲突、证据 Graph、报告、扫描对比与 IPv6 配置确认。
 - 准备清单、异常分流、学习材料与教程模板。
 
-MacOS + Codex 的 GitHub 下载、安装发现、无 Key 查询和报告生成已验收；具体范围见[首次使用实测](onboarding-validation.md)。
+MacOS + Codex 的 GitHub 下载、安装发现、无 Key 查询和报告生成已验收；具体范围见[首次使用实测](../archive/onboarding-validation.md)。
 
 ## 第一组：补齐只读检测与情报
 

@@ -47,7 +47,7 @@ You need Python 3.9+ and a local agent. Computer use must already be available i
 
 No pip installation, provider registration or manual JSON copying is needed. If the browser cannot reach the local receiver, the agent can use the file-based session instead.
 
-[Installation and first-run tutorial](tutorials/skill.md)
+[Installation and first-run tutorial](docs/archive/tutorials/skill.md)
 
 ## What you receive
 
@@ -62,7 +62,7 @@ The default checks cover the actual exit, available IP labels/history, and the d
 
 ## Optional tools remain available
 
-Extra providers, browser rendering observations, DNS/TLS, blocklists, connectivity diagnostics, maintenance and recovery tools remain opt-in. See the [catalog](docs/capability-coverage.md), [optional modules](tutorials/optional-modules.md), [provider setup](tutorials/providers.md) and [maintenance guide](tutorials/environment-maintenance.md). The catalog is a reference, not an onboarding checklist.
+Extra providers, browser rendering observations, DNS/TLS, blocklists, connectivity diagnostics, maintenance and recovery tools remain opt-in. See the [catalog](docs/architecture/capability-coverage.md), [optional modules](docs/archive/tutorials/optional-modules.md), [provider setup](docs/archive/tutorials/providers.md) and [maintenance guide](docs/archive/tutorials/environment-maintenance.md). The catalog is a reference, not an onboarding checklist.
 
 ```bash
 # Actual-browser default flow; add --file if this profile cannot reach loopback.
@@ -75,8 +75,8 @@ For source installation, clone the repository and run `python3 scripts/install_s
 
 Each recommendation connects a concrete concern to an observation, its limits, an action and a recheck. Provider scores are not 目标服务 ban probabilities. Language, timezone and fonts alone do not produce a risk verdict.
 
-Reports and private observations stay local. Network measurements and IP lookups reveal the request or queried IP to the selected services; local processing does not mean offline. 目标服务 cookies and credentials are not collected. [Privacy](docs/privacy.md) · [Upstream reuse](docs/upstream-reuse.md)
+Reports and private observations stay local. Network measurements and IP lookups reveal the request or queried IP to the selected services; local processing does not mean offline. 目标服务 cookies and credentials are not collected. [Privacy](docs/reference/privacy.md) · [Upstream reuse](docs/research/upstream-reuse.md)
 
-Private prerelease; download from `Releases`. [Workflow validation](docs/product-flow-validation.md)
+Private prerelease; download from `Releases`. [Workflow validation](docs/archive/product-flow-validation.md)
 
 [MIT](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md) · Independent community project; not affiliated with 上游服务商. No account outcome is guaranteed.

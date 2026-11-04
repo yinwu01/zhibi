@@ -80,4 +80,4 @@ Skill 必须标注观测主体；需要用户实际浏览器结果时导入其�
 上游服务商 的 [反蒸馏防护披露](https://www.anthropic.com/research/distillation-defenses)
 可支持特定滥用场景下的研究，不能迁移成普通注册阈值。
 
-[IP 检测原理与交付标准](ip-intelligence.md) · [理论模型](theory/decision-model.md) · [当前能力](validation.md)
+[IP 检测原理与交付标准](ip-intelligence.md) · [理论模型](../research/theory/decision-model.md) · [当前能力](../architecture/validation.md)

@@ -24,7 +24,7 @@
 故有了本项目：知彼，所谓知己知彼，百战不殆。
 
 本项目主要包含三部分：
-1. **本地化的环境检测**：测量、判读和报告都在你自己的机器上完成，不经过第三方检测站，也不上传 Cookie 与登录凭据。边界要说清楚：免 Key 的情报查询仍会让对应服务看到待查 IP；「本地」指采集与报告处理，不代表完全离线（[数据流说明](docs/privacy.md)）。
+1. **本地化的环境检测**：测量、判读和报告都在你自己的机器上完成，不经过第三方检测站，也不上传 Cookie 与登录凭据。边界要说清楚：免 Key 的情报查询仍会让对应服务看到待查 IP；「本地」指采集与报告处理，不代表完全离线（[数据流说明](docs/reference/privacy.md)）。
 2. **环境判读 Skill**：不替你做决定，也不推荐任何服务商。它测量你的实际环境，把每一项发现分成技术问题、渠道问题、合规问题三类——技术问题能修，渠道问题要换路，合规问题没有技术解。
 3. **稳定使用实操 Tutorial**：基于我本人稳定持有 3 个账号的使用经验整理出的实操教程。对于很多人来说，可能这部分才是更关键的；其余的检测流程直接交给 Agent 即可自动完成。
 
@@ -53,7 +53,7 @@
 
 > 当前仓库为 private，下载需要获邀的 GitHub 账号。Windows 将 `~` 替换为用户目录，命令使用 `py -3`。
 
-[完整安装、首次检查与故障处理](tutorials/skill.md)
+[完整安装、首次检查与故障处理](docs/archive/tutorials/skill.md)
 
 ## 实际会得到什么
 
@@ -95,17 +95,17 @@ computer use 负责真实界面操作，本地脚本负责测量、查询和报�
 
 社区经验和公开政策帮助提出检查假设；它们需要来源、适用条件和可复现的验证。证据 Graph 留在研究与解释层，供追溯判断依据。
 
-[研究方法](docs/research-method.md) · [风控层级](docs/risk-layers.md) · [作者实践专区](tutorials/author/README.md)
+[研究方法](docs/reference/research-method.md) · [风控层级](docs/reference/risk-layers.md) · [作者实践专区](docs/archive/tutorials/author/README.md)
 
 ## 可选能力
 
 已有能力全部保留。需要额外数据或遇到具体问题时，让 Agent 按需启用：
 
-- **更多 IP 情报**：IPQS、AbuseIPDB、ipapi.is 等；[免费额度与 Key 配置](tutorials/providers.md)。
-- **深入环境诊断**：WebRTC、DNS、浏览器属性与渲染、名单与连通性；[可选模块说明](tutorials/optional-modules.md)。
-- **配置与维护**：支持的配置计划、恢复、归档和安装修复；[操作范围与复查](tutorials/environment-maintenance.md)。
+- **更多 IP 情报**：IPQS、AbuseIPDB、ipapi.is 等；[免费额度与 Key 配置](docs/archive/tutorials/providers.md)。
+- **深入环境诊断**：WebRTC、DNS、浏览器属性与渲染、名单与连通性；[可选模块说明](docs/archive/tutorials/optional-modules.md)。
+- **配置与维护**：支持的配置计划、恢复、归档和安装修复；[操作范围与复查](docs/archive/tutorials/environment-maintenance.md)。
 
-[完整能力与状态](docs/capability-coverage.md)是查阅目录，不是新用户待办清单。全量模式仍可显式使用；其结果放在报告的可选检查中，不扩大主结论的范围。
+[完整能力与状态](docs/architecture/capability-coverage.md)是查阅目录，不是新用户待办清单。全量模式仍可显式使用；其结果放在报告的可选检查中，不扩大主结论的范围。
 
 <details>
 <summary>源码安装、手动命令与无 Agent 入口</summary>
@@ -130,10 +130,10 @@ python3 ~/.agents/skills/zhibi/scripts/zhibi.py session --preset basic --network
 
 ## 数据与复用
 
-报告在本机生成，Cookie、登录凭据和私人快照不上传聊天或检测网站。公网测量及 IP 情报查询仍会让对应服务看到请求 IP 或待查 IP；“本地”指采集与报告处理，不代表完全离线。[数据流说明](docs/privacy.md)
+报告在本机生成，Cookie、登录凭据和私人快照不上传聊天或检测网站。公网测量及 IP 情报查询仍会让对应服务看到请求 IP 或待查 IP；“本地”指采集与报告处理，不代表完全离线。[数据流说明](docs/reference/privacy.md)
 
-适配了 CCBaga、CheckCC 的部分成熟检测代码，具体版本、许可和改动见[复用记录](docs/upstream-reuse.md)。项目自身的诊断与解释会保留证据边界，不把上游经验分数变成 账号处置概率。
+适配了 CCBaga、CheckCC 的部分成熟检测代码，具体版本、许可和改动见[复用记录](docs/research/upstream-reuse.md)。项目自身的诊断与解释会保留证据边界，不把上游经验分数变成 账号处置概率。
 
-当前为私有预发布版，发布包见 `Releases`。[本轮主流程验收](docs/product-flow-validation.md) · [贡献](CONTRIBUTING.md)
+当前为私有预发布版，发布包见 `Releases`。[本轮主流程验收](docs/archive/product-flow-validation.md) · [贡献](CONTRIBUTING.md)
 
 [MIT](LICENSE) · [第三方许可](THIRD_PARTY_NOTICES.md) · 独立社区项目，与 上游服务商 无隶属关系。

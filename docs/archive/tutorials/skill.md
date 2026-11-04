@@ -108,4 +108,4 @@ Agent 还应告诉你实际操作了什么、有没有修改设置、哪些结�
 | 没有独立环境配置开关 | 明确控制边界和后续选择，不动全局设置凑通过 |
 | 点击保存但没生成报告 | 核对本次下载的精确路径；确认接收并打开最终报告才算交付 |
 
-[本轮验收](../docs/product-flow-validation.md) · [隐私](../docs/privacy.md) · [复用与许可](../docs/upstream-reuse.md)
+[本轮验收](../product-flow-validation.md) · [隐私](../../reference/privacy.md) · [复用与许可](../../research/upstream-reuse.md)

@@ -73,7 +73,7 @@ CLI 修复仅支持已检测到的 npm/bun/native 渠道，版本必须为明确
 
 SSH 配置字段为 `host`、`user`、`port`、`identity_file`、`known_hosts`、`local_port`。仅使用已有私钥和经过核对的主机密钥；`--apply` 在前台运行 SSH SOCKS，Ctrl-C 停止。不改远端系统，不安装 Xray、不买 VPS，不执行 CCBaga 的整机升级、防火墙/SSH 配置改写或明文订阅服务。
 
-CCBaga 的完整 Debian VPS 部署目前仍是覆盖缺口，详见[能力覆盖](../docs/capability-coverage.md)。这些已交付的客户端/隧道能力不能冒充其整套服务端部署。
+CCBaga 的完整 Debian VPS 部署目前仍是覆盖缺口，详见[能力覆盖](../../architecture/capability-coverage.md)。这些已交付的客户端/隧道能力不能冒充其整套服务端部署。
 
 ## Skill 升级与回退
 

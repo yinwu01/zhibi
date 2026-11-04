@@ -42,7 +42,7 @@ python scripts/verify_skill.py
 帖子属于案例陈述；没有对照和充分样本时，不推断因果或宣称防封成功率。
 来源变化后，沿规则引用检查受影响结论。
 
-先读 [理论框架](docs/theory/README.md) 与 [开发者实验](tutorials/developer-walkthrough.md)。
+先读 [理论框架](docs/research/theory/README.md) 与 [开发者实验](docs/archive/tutorials/developer-walkthrough.md)。
 跨平台类比和待验证假设可进入研究库，但不能直接启用确定性产品结论。
 生成目录与源数据必须一起更新；来源查阅日期不能填未来日期。
 

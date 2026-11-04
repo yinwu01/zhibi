@@ -18,7 +18,7 @@
 - Also adapted in `src/zhibi/assets/browser-details.js`: fixed 26-font candidate list and Canvas text-width probing, browser/device token matching, and language/UTC offset observation.
 - Changes: independent opt-in modules, bounded fields, failure isolation, unstable-font-metric detection, explicit unknown language script, fixed-vocabulary summaries and local-only values. The optional `checkcc_model.py` also ports `scoring.ts`, `config/regions.ts`, `config/signals.ts` and client contribution logic from `client-engine.ts`. Research scores are separately labeled, unavailable observations stay unknown, and they never determine the main verdict. No browser-fingerprint manipulation was copied. Emoji family is labeled as UA inference, not rendered-pixel measurement.
 
-Upstream file digests are recorded in [docs/upstream-lock.json](docs/upstream-lock.json). Both full MIT notices are embedded in exported advanced browser pages and included in the Skill distribution. IPQuality is a researched reference; no AGPL code is incorporated.
+Upstream file digests are recorded in [docs/upstream-lock.json](docs/research/upstream-lock.json). Both full MIT notices are embedded in exported advanced browser pages and included in the Skill distribution. IPQuality is a researched reference; no AGPL code is incorporated.
 
 ## External reputation services
 

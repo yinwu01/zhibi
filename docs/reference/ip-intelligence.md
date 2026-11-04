@@ -1,12 +1,12 @@
 # 本地 IP 与欺诈风险检测：原理、对标和交付标准
 
 核对日期：2026-10-19。本文保留原始设计；已接入 IPWhois、ipapi.is、IPQS、AbuseIPDB、ProxyCheck v3、IPQuery、StopForumSpam 和高级双栈/WebRTC 探针。
-下表同时保留目标与当前覆盖；验证见 [验收](validation.md)，不是准确率评测。
+下表同时保留目标与当前覆盖；验证见 [验收](../architecture/validation.md)，不是准确率评测。
 已对选定免费来源执行真实 IP 查询；没有使用用户的付费密钥，也没有读取账号凭据。
 
 第一项交付要回答：这次连接从哪里出去、情报库如何描述该 IP、有哪些带时间和来源的风险线索、
 哪些结果存在分歧，以及下一步该检查什么。0.2 已接入七个来源及浏览器路径测量，未覆盖项继续明确保留。
-免 Key 的四源组合已在真实 AdsPower 出口实测；结果不等于账号注册成功率。接入与费用以 [供应商教程](../tutorials/providers.md) 为准。
+免 Key 的四源组合已在真实 AdsPower 出口实测；结果不等于账号注册成功率。接入与费用以 [供应商教程](../archive/tutorials/providers.md) 为准。
 
 ## 检测网站背后的三个部分
 
@@ -148,4 +148,4 @@ status / labels / original_score / score_semantics / evidence_method
 第一版不复刻商业检测模型，也不宣布“最先进”。目标是接入可用的先进情报，
 把测量、来源与解释做得可验证，让用户知道每项结论的根据。
 
-[六层风控框架](risk-layers.md) · [如何阅读 IP 报告](../tutorials/ip-report.md) · [实现计划](roadmap.md)
+[六层风控框架](risk-layers.md) · [如何阅读 IP 报告](../archive/tutorials/ip-report.md) · [实现计划](../product/roadmap.md)

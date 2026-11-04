@@ -26,7 +26,7 @@ flowchart LR
 
 ## 阅读顺序
 
-先看 [六层问题与三种交付对照](../risk-layers.md)，明确本地能测什么、Agent 怎样自检、教程如何指导。
+先看 [六层问题与三种交付对照](../../reference/risk-layers.md)，明确本地能测什么、Agent 怎样自检、教程如何指导。
 
 1. [决策模型](decision-model.md)：从平台 motivation 到业务事件和不同损失。
 2. [特征、Graph 与时间](features-and-graph.md)：哪些可测，哪些必须保持未知。
@@ -60,4 +60,4 @@ zhibi lab routing                   # 动手检验正常反例
 待验证、被反驳、撤回和跨平台类比主张直接产生确定结论。来源失效时降低判断确定性。
 这些检查保护推导链；它们不能自动评审论文质量或保证人工录入的知识正确。
 
-本框架由 [研究方法](../research-method.md) 和 [贡献流程](../../CONTRIBUTING.md) 维护。
+本框架由 [研究方法](../../reference/research-method.md) 和 [贡献流程](../../../CONTRIBUTING.md) 维护。

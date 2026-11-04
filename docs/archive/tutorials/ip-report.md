@@ -61,4 +61,4 @@ IPv6 默认建议关闭专用环境的出站；未确认时显示操作建议，
 发起人的三个成功注册案例等待本人补充真实过程，参见 [作者教程](author/README.md)。
 分享前删除账号标识、Cookie、令牌、支付材料、完整 IP 与可识别截图。
 
-[回到教程总览](README.md) · [查看检测原理](../docs/ip-intelligence.md)
+[回到教程总览](README.md) · [查看检测原理](../../reference/ip-intelligence.md)

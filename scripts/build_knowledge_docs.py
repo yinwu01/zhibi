@@ -16,5 +16,5 @@ for feature in bundle("features"):
     content += "验证方式：" + feature["validation"] + "\n\n"
     content += "关联主张：" + ", ".join(feature["claim_ids"]) + "\n\n"
 content += "\n---\n由 scripts/build_knowledge_docs.py 从 src/zhibi/data 生成；请修改源数据后重新生成。\n"
-(root / "docs/theory/catalog.md").write_text(content, encoding="utf-8")
+(root / "docs/research/theory/catalog.md").write_text(content, encoding="utf-8")
 print(counts)

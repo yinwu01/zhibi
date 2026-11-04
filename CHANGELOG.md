@@ -55,7 +55,7 @@
 - 每项情报关联平台动机、正常反例、来源和下一步，报告保留来源分歧，输出证据关系图。
 - `scan-compare` 在本地比对对象与配置；`scan-demo` 提供三个离线演示。
 - `dns` 可选观察 dig 默认解析器与 ECS；私人原始结果、缓存/浏览器范围限制和独立摘要。
-- 当前实测与剩余验收见 [交付清单](docs/delivery-checklist.md)。
+- 当前实测与剩余验收见 [交付清单](docs/architecture/delivery-checklist.md)。
 
 ## 0.1.0a1 — 本地 alpha，2026-10-18
 
