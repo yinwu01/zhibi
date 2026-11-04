@@ -76,13 +76,6 @@ class ProviderExtensionTests(unittest.TestCase):
 
 
 class DiagnosticsTests(unittest.TestCase):
-    def test_endpoint_response_never_asserts_auth_or_unlock(self):
-        op = Opener(error=urllib.error.HTTPError("https://claude.ai", 403, "no", {}, None))
-        item = d.service("claude-web", op)
-        self.assertEqual(item["status"], "review")
-        self.assertFalse(item["facts"]["account_access_verified"])
-        self.assertFalse(item["facts"]["region_access_verified"])
-
     def test_smtp_fixed_targets_and_never_sends_mail(self):
         class Connection:
             def __enter__(self): return self

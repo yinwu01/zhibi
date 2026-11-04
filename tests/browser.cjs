@@ -52,7 +52,7 @@ const root = path.resolve(__dirname, "..");
     await page.setViewportSize({width:1160,height:960});
     await page.screenshot({path:path.join(root,"docs/assets/start-demo.png")});
     assert.equal(requests.length,0,"Opening probe must be offline");
-    assert.ok(await page.getByRole("heading",{name:/准备注册 Claude/}).isVisible());
+    assert.ok(await page.getByRole("heading",{name:/开始检查/}).isVisible());
     await page.getByRole("button",{name:"开始检查",exact:true}).click();
     await page.waitForFunction(() => !document.querySelector("#download").disabled);
     assert.ok(await page.locator("#results").isVisible(),"Readable results must not require Python or JSON export");

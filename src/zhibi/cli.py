@@ -63,6 +63,17 @@ def save_run(report, snapshot, destination=None):
     emit({"directory": str(directory), "report": str(directory / "report.html"), "summary": summary})
 
 
+VISIBLE = {"check", "build", "browse", "accept", "deliver", "doctor"}
+
+
+def _minimal_help(parser):
+    """Hide legacy commands from --help; they stay callable."""
+    for action in parser._actions:
+        choices = getattr(action, "_choices_actions", None)
+        if choices:
+            choices[:] = [c for c in choices if c.dest in VISIBLE]
+
+
 def main(argv=None):
     # JSON and Chinese text must remain usable in redirected pipes on all platforms.
     for stream in (sys.stdout, sys.stderr):
@@ -70,7 +81,7 @@ def main(argv=None):
             stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(prog="zhibi", description="知彼：本地检查、公开证据与 环境准备。")
     parser.add_argument("--version", action="version", version=__version__)
-    sub = parser.add_subparsers(dest="command", required=True)
+    sub = parser.add_subparsers(dest="command", required=True, metavar="command")
     sub.add_parser("capabilities", help="查看真实能力与实现边界")
     sub.add_parser("doctor", help="检查工具运行条件，不读取账号文件")
     sub.add_parser("providers", help="查看情报来源、覆盖与密钥配置状态，不显示密钥")
@@ -105,14 +116,14 @@ def main(argv=None):
     p.add_argument("before")
     p.add_argument("after")
     p.add_argument("--same-context", action="store_true", help="声明同一设备/使用场景；否则只返回不可比")
-    for command in ("plan", "check"):
+    for command in ("plan", "local-check"):
         p = sub.add_parser(command, help="显示数据流" if command == "plan" else "执行只读检查并生成报告")
         p.add_argument("--network", action="store_true", help="允许一次 ipify 出口请求")
         p.add_argument("--ip-metadata", action="store_true", help="额外允许一次 IPWhois 归属查询")
         p.add_argument("--ipv6", action="store_true", help="额外允许一次 IPv6 专用端点查询")
         p.add_argument("--connectivity", action="store_true", help="额外允许一次目标站点首页 HEAD，不登录；需配合 --target-domain")
         p.add_argument("--target-domain", help="声明目标站点域名，如 example.com；未声明时不做任何站点探测")
-        if command == "check":
+        if command == "local-check":
             p.add_argument("--profile", help="非敏感场景 JSON")
             p.add_argument("--browser", help="实际浏览器探针 JSON")
             p.add_argument("--out", help="新建的输出目录，默认 ~/.zhibi/<run>")
@@ -174,6 +185,10 @@ def main(argv=None):
     network_setup.register(sub)
     from . import adspower
     adspower.register(sub)
+    from . import remote
+    remote.register(sub)
+    from . import flow
+    flow.register(sub)
     from . import delivery
     delivery.register(sub)
     p = sub.add_parser("dns-observer", help="Explicit self-hosted authoritative DNS observer; see tutorial")
@@ -182,6 +197,7 @@ def main(argv=None):
     p.add_argument("--bind", default="127.0.0.1")
     p.add_argument("--dns-port", type=int, default=5353)
     p.add_argument("--http-port", type=int, default=8053)
+    _minimal_help(parser)
     args = parser.parse_args(argv)
     try:
         if args.command == "suite-share":
@@ -192,6 +208,10 @@ def main(argv=None):
             emit(delivery.install(args.archive, args.sha256, args.dest, args.replace))
         elif args.command == "skill-rollback":
             emit(delivery.rollback(args.dest, args.previous))
+        elif args.command in flow.STEPS:
+            emit(flow.dispatch(args))
+        elif args.command == "remote":
+            emit(remote.dispatch(args))
         elif args.command == "adspower":
             emit(adspower.run(args.action, args.config, args.apply, args.out, args.receipt))
         elif args.command == "dns-observer":
@@ -269,7 +289,7 @@ def main(argv=None):
             emit(compare_scans(args.before, args.after, args.same_context))
         elif args.command == "plan":
             emit(plan(args.network, args.ip_metadata, args.ipv6, args.connectivity, args.target_domain))
-        elif args.command == "check":
+        elif args.command == "local-check":
             plan(args.network, args.ip_metadata, args.ipv6, args.connectivity, args.target_domain)
             context = profile(read_json(args.profile) if args.profile else None)
             browser = browser_input(read_json(args.browser)) if args.browser else None

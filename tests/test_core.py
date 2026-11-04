@@ -247,7 +247,7 @@ class CLITests(unittest.TestCase):
             source.write_text('{"cookie":"PRIVATE_SECRET"}')
             stream = io.StringIO()
             with redirect_stderr(stream):
-                self.assertEqual(main(["check", "--profile", str(source)]), 2)
+                self.assertEqual(main(["local-check", "--profile", str(source)]), 2)
             self.assertNotIn("PRIVATE_SECRET", stream.getvalue())
 
     def test_metadata_requires_network(self):

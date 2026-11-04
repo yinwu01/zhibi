@@ -78,7 +78,7 @@ def html(report):
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer"><title>知彼 · 注册准备报告</title><style>{css}</style></head>
 <body><main class="shell"><nav class="topline"><div class="brand">知彼 <small>ZHIBI / FIELD NOTES</small></div>
-<div class="mono">CLAUDE ACCOUNT PREPARATION<br>{esc(report["generated_at"])}</div></nav>
+<div class="mono">ENVIRONMENT PREPARATION<br>{esc(report["generated_at"])}</div></nav>
 <section class="hero"><div><div class="eyebrow">OBSERVE · UNDERSTAND · PREPARE</div>
 <h1>看懂风控。<br>再做准备。</h1><p class="intro">把当前观测、公开证据和下一步放在一起。先处理能确认的问题，让未知保持可见。</p>
 <span class="stamp">{sample}</span></div><div class="diagram">{RADAR}</div></section>

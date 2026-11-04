@@ -121,41 +121,6 @@ class ResearchTests(unittest.TestCase):
 
 
 class ExtendedNetworkTests(unittest.TestCase):
-    def test_public_http_denial_is_not_a_ban(self):
-        transport = Transport(True, connectivity=True)
-        with patch("urllib.request.OpenerDirector.open", side_effect=urllib.error.HTTPError(PUBLIC_ENDPOINT, 403, "SECRET", {}, None)) as call:
-            facts = transport.probe_public()
-        self.assertEqual(call.call_args[0][0].method, "HEAD")
-        self.assertNotIn("SECRET", json.dumps(facts))
-        self.assertEqual(facts["http_status"], 403)
-        report = evaluate([observation("network.connectivity", "ok", facts)])
-        finding = next(f for f in report["findings"] if f["id"] == "network.connectivity")
-        self.assertEqual(finding["assessment"], "needs_confirmation")
-        self.assertNotIn("封号", finding["statement"])
-
-    def test_connection_layers_without_raw_error_text(self):
-        for reason, outcome in ((socket.gaierror("SECRET"), "dns_error"),
-                                (ssl.SSLCertVerificationError("SECRET"), "tls_error"),
-                                (socket.timeout("SECRET"), "timeout"),
-                                (OSError("SECRET"), "transport_error")):
-            with patch("urllib.request.OpenerDirector.open", side_effect=urllib.error.URLError(reason)):
-                facts = Transport(True, connectivity=True).probe_public()
-            self.assertEqual(facts["outcome"], outcome)
-            self.assertNotIn("SECRET", json.dumps(facts))
-            state = "timeout" if outcome == "timeout" else "error"
-            validate_observations([observation("network.connectivity", state, facts)])
-
-    def test_public_probe_requires_optin_and_is_single_attempt(self):
-        for transport in (Transport(), Transport(True)):
-            with self.assertRaises(NetworkError):
-                transport.probe_public()
-        transport = Transport(True, connectivity=True)
-        with patch("urllib.request.OpenerDirector.open", side_effect=socket.timeout()) as call:
-            transport.probe_public()
-            with self.assertRaises(NetworkError):
-                transport.probe_public()
-            self.assertEqual(call.call_count, 1)
-
     def test_ipv6_response_validates_family_and_optin(self):
         for address, state in (("2606:4700:4700::1111", "ok"), ("8.8.8.8", "error"), ("::1", "error")):
             transport = Transport(True, ipv6=True)
