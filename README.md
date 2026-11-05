@@ -64,9 +64,17 @@ Agent 负责推进：**扫描当前环境 → 确认配置需求 → 准备 VPS 
 
 完整配置需要上述 **Linux VPS**、本机 **Python 3.9+**、**SSH 客户端**和一个本机 Agent；推荐能操作你的实际浏览器与桌面的宿主。仅安装 Skill 不会给宿主增加 computer use 能力；没有这项能力时，Agent 仍可运行检测，少量界面操作需要你接手。
 
-1. 下载完整 Skill ZIP（`Releases` 页面的 `zhibi-skill.zip`），解压。
-2. 把整个 `zhibi` 文件夹放到对应目录；保留 `assets`、`scripts`、`references`。已有旧版先移出备份。
-3. 新开 Agent 会话，调用知彼，告诉它你的实际使用环境。
+当前公开源码可直接安装，让 Agent 执行：
+
+```bash
+git clone https://github.com/yinwu01/zhibi.git
+cd zhibi
+python3 scripts/install_skill.py --host codex
+```
+
+安装器会构建完整 Skill，包括脚本、参考资料与内置核心；已有安装不会覆盖。其他宿主用 `--dest /path/to/skills/zhibi` 指定目录。安装完成后，新开 Agent 会话调用知彼。
+
+发布包上线后，也可以下载 `Releases` 页面的 `zhibi-skill.zip`，将完整 `zhibi` 文件夹解压到下面的安装位置。不要只复制 SKILL.md。
 
 | 宿主 | 安装位置 | 调用 |
 | --- | --- | --- |
@@ -79,7 +87,7 @@ Agent 负责推进：**扫描当前环境 → 确认配置需求 → 准备 VPS 
 
 **不需要 pip，不需要先注册 IP 情报服务，不需要手工复制检测 JSON。** Agent 会打开探针、执行检查、保存到本机并生成报告。若宿主无法操作该浏览器，它会交代唯一需要你完成的界面步骤。
 
-> 当前仓库为 private，下载需要获邀的 GitHub 账号。Windows 将 `~` 替换为用户目录，命令使用 `py -3`。
+Windows 将 `~` 替换为用户目录，Python 命令使用 `py -3`。
 
 [完整安装、首次检查与故障处理](docs/archive/tutorials/skill.md)
 
@@ -155,7 +163,9 @@ zhibi process-entry --workspace PROFILE --name myapp --program /opt/app/bin/myap
 
 默认网络模式 `isolated` 没有外部连接；显式 `--network host` 使用服务器现有网络；`--network proxy` 在无外部路由的网络空间内，通过私人 Unix SOCKS5 socket 与固定 SHA256 的 graftcp 联网。`proxy-gateway` 可在服务器启动该私人端点。TCP、DNS、子进程、IPv4/IPv6 直接 UDP 阻断和代理停止后的失败行为已在 Linux 隔离测试中验证；项目网关的真实 HTTPS 请求也已通过。持续托管与完整应用交付仍需验收。详细参数见 [进程包裹](docs/implementation/process-wrapper.md)。
 
-开发验证已覆盖回环真实 SSH/SOCKS、Linux bwrap 命令入口与应用替换、单元回归和独立安装；真实 systemd 与用户浏览器的完整验收仍待完成。开发进度见 [闭环记录](docs/implementation/closure-status.md)。
+需要持续运行时，`runtime-service --workspace PROFILE --name zhibi-NAME --out SERVICE_DIR` 生成用户级 systemd 网关服务及独立的安装、状态、恢复命令。可在末尾追加 `-- PROGRAM ARGS...` 同时托管非交互后台应用；交互式应用继续通过命令入口启动。已有同名服务不覆盖，新服务安装失败自动恢复，网关异常会触发整套后台运行环境重启。
+
+开发验证已覆盖回环真实 SSH/SOCKS、Linux bwrap 命令入口与应用替换、真实 systemd 安装/重启/恢复、单元回归和独立安装；实际应用与用户浏览器的完整验收仍待完成。开发进度见 [闭环记录](docs/implementation/closure-status.md)。
 
 ## 为什么从主动风控角度做
 
@@ -204,6 +214,6 @@ python3 ~/.agents/skills/zhibi/scripts/zhibi.py session --preset basic --network
 
 适配了 CCBaga、CheckCC 的部分成熟检测代码，具体版本、许可和改动见[复用记录](docs/research/upstream-reuse.md)。项目自身的诊断与解释会保留证据边界，不把上游经验分数变成 账号处置概率。
 
-当前为私有预发布版，发布包见 `Releases`。[本轮主流程验收](docs/archive/product-flow-validation.md) · [贡献](CONTRIBUTING.md)
+公开开发预发布版；源码安装当前可用，发布包另行发布。[本轮主流程验收](docs/implementation/acceptance-matrix.md) · [贡献](CONTRIBUTING.md)
 
 [MIT](LICENSE) · [第三方许可](THIRD_PARTY_NOTICES.md) · 独立社区项目，与 上游服务商 无隶属关系。

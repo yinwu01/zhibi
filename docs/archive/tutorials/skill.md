@@ -5,8 +5,8 @@
 
 ## 1. 下载与安装
 
-从 `Releases` 页面下载 `zhibi-skill.zip`。这是包含核心的完整包，无需 pip 或另外安装依赖。
-当前仓库为 private，需登录获邀账号；404 通常需要先核对仓库访问权限。
+当前公开源码可用：克隆仓库后运行 `python3 scripts/install_skill.py --host codex`，会构建并安装包含核心的完整 Skill，无需 pip。其他宿主可通过 `--dest` 指定安装位置。
+当 `Releases` 页面有已发布版本时，也可下载完整 `zhibi-skill.zip`。若没有发布包，使用上述源码安装路径；不要把仓库源码 ZIP 当成完整 Skill ZIP。
 
 解压整个文件夹到下列位置，保留 `SKILL.md`、`scripts`、`assets`、`references`。已有旧版先移出 skills 目录备份。
 

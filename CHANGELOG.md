@@ -6,8 +6,10 @@
 - 新增 connect、connection-check 和独立连接文件夹，支持本机 SOCKS5、远端命令、交互终端及退出清理。
 - 后台服务备份、失败恢复和部署回执；报告使用实际浏览器数据并保留两端验收。
 - 修正出口归属、公共 DNS 与缺失信息的判读；阶段 --out 保存私人结果。
-- 本地协议集成覆盖 SSH、SOCKS、独立 Chrome、PTY、端口冲突和停止清理。真实 VPS/systemd 与用户浏览器完整验收仍未完成，见 docs/implementation/acceptance-matrix.md。
-- 此版本仅构建在本地，尚未发布到远端。
+- 新增 bwrap 工作区、独立命令入口、固定 graftcp 代理模式与私人 SOCKS5 网关；应用替换后仍经过包裹，网关停止后联网失败。
+- 新增 runtime-service：独立用户级 systemd 网关和可选后台应用服务，包含就绪检查、故障重启、冲突保护及恢复回执；真实 Linux 验证通过。
+- 本地协议集成覆盖 SSH、SOCKS、独立 Chrome、PTY、端口冲突、停止清理、Linux namespace、真实 HTTPS 和用户级 systemd。实际应用与用户浏览器完整验收仍未完成，见 docs/implementation/acceptance-matrix.md。
+- 源码已推送；正式发布包尚未发布。GitHub CI 受账号账单锁定影响未能启动，本地与实机结果单独记录。
 
 ## 0.3.0a3 — 主流程收敛，2026-10-20
 

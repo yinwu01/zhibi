@@ -28,3 +28,9 @@ Each service's terms and data policies apply to its responses independently of t
 These adapters are not claimed to be copied from CCBaga or CheckCC.
 
 Public IPsum and Spamhaus DROP data are optionally downloaded for local comparison, not included in the distribution. Data terms apply separately. DB-IP Free lookups retain the attribution “IP Geolocation by DB-IP” with its source link. AdsPower API and system maintenance adapters are independent implementations.
+
+## External Linux runtime tools
+
+Zhibi invokes separately installed bubblewrap, graftcp, iproute2, util-linux and systemd programs. Their source code and executable files are not embedded in the wheel, source archive or Skill archive. The private SOCKS5 gateway and service manager are Zhibi implementations.
+
+The graftcp adapter is tested against revision `574b30bfe1d4d36b3f3bff72041665b4df19573f` of [hmgle/graftcp](https://github.com/hmgle/graftcp), whose source headers specify GPL-3.0-or-later. Bubblewrap includes an [LGPL-2.1 license](https://github.com/containers/bubblewrap/blob/main/COPYING). Installation/build downloads and any separate redistribution remain subject to those projects' licenses; Zhibi's MIT license does not relicense external tools.

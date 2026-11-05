@@ -63,7 +63,7 @@ def save_run(report, snapshot, destination=None):
     emit({"directory": str(directory), "report": str(directory / "report.html"), "summary": summary})
 
 
-VISIBLE = {"session", "scan", "check", "connect", "connection-check", "browser-workspace", "process-workspace", "process-entry", "build", "browse", "accept", "deliver", "doctor"}
+VISIBLE = {"session", "scan", "check", "connect", "connection-check", "browser-workspace", "process-workspace", "process-entry", "proxy-gateway", "runtime-service", "build", "browse", "accept", "deliver", "doctor"}
 
 
 def _minimal_help(parser):
@@ -187,6 +187,11 @@ def main(argv=None):
     adspower.register(sub)
     from . import remote
     remote.register(sub)
+    p = sub.add_parser("runtime-service", help="导出用户级 systemd 网关与可选后台应用服务")
+    p.add_argument("--workspace", required=True)
+    p.add_argument("--name", required=True, help="以 zhibi- 开头的新服务名")
+    p.add_argument("--out", required=True)
+    p.add_argument("program", nargs=argparse.REMAINDER, help="-- 后填写可选后台程序与参数")
     p = sub.add_parser("proxy-gateway", help="启动私人 Unix SOCKS5 端点，使用服务器现有出口")
     p.add_argument("--socket", required=True)
     p = sub.add_parser("process-entry", help="为现有进程工作区创建专用命令入口")
@@ -229,6 +234,10 @@ def main(argv=None):
             emit(delivery.install(args.archive, args.sha256, args.dest, args.replace))
         elif args.command == "skill-rollback":
             emit(delivery.rollback(args.dest, args.previous))
+        elif args.command == "runtime-service":
+            from .runtime_service import export
+            program = args.program[1:] if args.program[:1] == ["--"] else args.program
+            emit(export(args.out, args.workspace, args.name, program))
         elif args.command == "proxy-gateway":
             from .proxy_gateway import serve
             serve(args.socket)

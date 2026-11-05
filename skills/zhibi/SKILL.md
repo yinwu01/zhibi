@@ -29,6 +29,8 @@ description: Inspect the user's actual browser and VPS network, optionally prepa
 
 `connect` 可以同时提供本机 SOCKS5 与远端进程；`build` 用于非交互后台服务，默认只出计划。后台常驻不等于应用可用，必须检查日志和用户所需的应用操作。先保存原值和已有服务配置，再执行授权的变更。
 
+需要专用进程环境时，按 runtime 参考使用 `process-workspace` 与 `process-entry`。需要受控代理联网时选择 proxy 模式，核验固定版本 graftcp 和解析器可达性；长期运行用 `runtime-service` 交付用户级网关服务及恢复入口。不要把默认完全隔离模式交付成可联网环境，也不要把 host 模式描述成代理专用网络。
+
 ## 4. 浏览器
 
 阅读 [browser](references/browser.md)。用户可以自行配置或委托 Agent。API、computer use 或手动均可；以实际浏览器版本和官方说明选择方式。配置目标固定，点击步骤灵活。
