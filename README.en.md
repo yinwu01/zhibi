@@ -25,25 +25,13 @@ Linux checks cover command replacement, child processes, DNS, TCP, direct UDP bl
 
 ## A personal note
 
-Using the application has always been very difficult for Chinese users. Its capabilities are tempting, and we want to use it normally. But I have found that many so-called checking websites and projects mainly patch things up based on scattered feedback. With those feedback-monitoring websites in particular, you have no idea how extensively they have sold your data or to whom.
+Switching machines, network exits and browser profiles can leave settings out of sync. Zhibi grew out of my experience studying risk controls for international applications and using paid services across different environments. The practical aim is to inspect those settings, prepare a dedicated environment, and verify the resulting network path.
 
-After opening three accounts and steadily using 20x Max on them, I believe we should reverse-engineer the application's risk-control thinking from a risk-control perspective and take corresponding steps to address known strategies.
+The project combines three parts:
 
-From a conventional risk-control perspective, the core strategy for using a product is **cosplay**: we need to disguise ourselves as normal users within the scope the application permits. The practical target is a consistent observable environment, with fewer unnecessary sources of local-device information.
-
-Viewed this way, many current rumors are pretty ridiculous. Some people say that typing Chinese, or even using Chinese commas, gets you banned. Chinese is one of the most widely used languages in the world; banning someone just for using it would be absurd. Then there is changing timezones. Someone might change a setting on a Linux server, or their computer's clock might malfunction and cause a timezone mismatch. From a risk-control perspective, a timezone change alone cannot be a reasonable basis for a decision. If even that directly triggers enforcement, it can only be a flaw in the risk-control algorithm's design.
-
-As it happens, I currently work in a ByteDance risk-control team focused on international products. From a risk-modeling perspective, we can absolutely infer the application's risk-control policies. This motivates the project: investigate observable signals, configure a coherent environment, and verify what actually changed.
-
-With this project, I hope to draw on the experience of excellent existing projects and combine a risk-control perspective with community feedback to provide a complete approach to normal the application registration and use.
-
-This project has three main parts:
-
-1. Fully local IP checks: stop exposing your valuable data to third parties and avoid putting your registration and usage environment at further risk.
-2. A risk-control evasion Skill: guidance and assistance to help you respond to the application's risk-control strategies.
-3. A practical tutorial for stable use: based on my experience maintaining and using three accounts reliably. For many people, this may be the most important part; the remaining checks can simply be handed to an agent to complete automatically.
-
-That is why we are starting this project for the application.
+1. Local environment checks and reports, with explicit network queries when needed.
+2. An Agent Skill that interprets observations and carries out configuration steps.
+3. A dedicated VPS application workspace and browser connection, with reusable startup, shutdown and recovery instructions.
 
 </details>
 
@@ -59,7 +47,7 @@ cd zhibi
 python3 scripts/install_skill.py --host codex
 ```
 
-The installer builds the complete Skill and refuses to overwrite an existing installation. Other hosts can use `--dest /path/to/skills/zhibi`. Once a release archive is published, extracting its entire `zhibi` folder into the host's skill directory is an alternative.
+The installer builds the complete Skill and refuses to overwrite an existing installation. Other hosts can use `--dest /path/to/skills/zhibi`. The v0.4.0a1 release is currently a draft; use source installation for now.
 
 Start a fresh session, invoke `$zhibi` or `/zhibi`, and say:
 
@@ -78,7 +66,7 @@ The Skill has two modes:
 - **Detect:** measure the actual environment, query no-key intelligence and explain actionable findings.
 - **Assist:** follow the user's task or supplied procedure, inspect settings with computer use or supported local tools, perform authorized changes, retain recovery evidence and recheck the same environment.
 
-The default checks cover the actual exit, available IP labels/history, and the dedicated environment's IPv6 policy. Extra checks are selected for a specific question. Account verification, payment and unavailable permissions remain explicit handoffs. The founder's detailed registration procedure is still pending; it is not invented by the agent.
+The default checks cover the actual exit, available IP labels/history, and the dedicated environment's IPv6 policy. Extra checks are selected for a specific question. Account verification, payment and unavailable permissions remain explicit handoffs.
 
 ## Optional tools remain available
 
@@ -89,14 +77,27 @@ Extra providers, browser rendering observations, DNS/TLS, blocklists, connectivi
 python3 ~/.agents/skills/zhibi/scripts/zhibi.py session --preset basic --network
 ```
 
-For source installation, clone the repository and run `python3 scripts/install_skill.py --host codex`. The standalone [start.html](start.html) remains a manual fallback.
+The standalone [start.html](start.html) remains a manual fallback.
 
 ## Evidence and privacy
 
-Each recommendation connects a concrete concern to an observation, its limits, an action and a recheck. Provider scores are not the application ban probabilities. Language, timezone and fonts alone do not produce a risk verdict.
+Each recommendation connects a concrete concern to an observation, its limits, an action and a recheck. Provider scores are not account-enforcement probabilities. Language, timezone and fonts alone do not produce a risk verdict.
 
-Reports and private observations stay local. Network measurements and IP lookups reveal the request or queried IP to the selected services; local processing does not mean offline. the application cookies and credentials are not collected. [Privacy](docs/reference/privacy.md) · [Upstream reuse](docs/research/upstream-reuse.md)
+Reports and private observations stay local. Network measurements and IP lookups reveal the request or queried IP to the selected services; local processing does not mean offline. Application cookies and credentials are not collected. [Privacy](docs/reference/privacy.md) · [Upstream reuse](docs/research/upstream-reuse.md)
 
 Public development prerelease; source installation is available now. Release archives will be published separately. [Workflow validation](docs/implementation/acceptance-matrix.md)
 
 [MIT](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md) · Independent community project; not affiliated with application vendors. No account outcome is guaranteed.
+
+## Acknowledgments
+
+Thanks to the authors and contributors of these projects:
+
+- [xiaoxiaodong-vps](https://github.com/nevertoday/xiaoxiaodong-vps): VPS deployment blueprints, Agent Skill organization and operational workflows.
+- [CCBaga](https://github.com/liseami/CCBaga): network and environment workflows, and adapted browser-egress detection code.
+- [CheckCC](https://github.com/yacuo/check-cc): adapted browser observations, font probes and research comparison models.
+- [IPQuality](https://github.com/xykt/IPQuality): research and capability comparison for IP quality checks.
+- [bubblewrap](https://github.com/containers/bubblewrap): the Linux process isolation tool used by application workspaces.
+- [graftcp](https://github.com/hmgle/graftcp): proxy connectivity for applications and their child processes.
+
+See the [upstream reuse record](docs/research/upstream-reuse.md) for versions and modifications, and [third-party notices](THIRD_PARTY_NOTICES.md) for attribution and licensing.

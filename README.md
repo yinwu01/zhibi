@@ -22,7 +22,7 @@ Agent 负责推进：**扫描当前环境 → 确认配置需求 → 准备 VPS 
 1. **环境信息一致**：检查应用与浏览器的实际网络出口，核对选定的时区、语言和路由，处理意外直连与配置冲突，并在修改后重新测量。
 2. **信息暴露更少**：用专用目录隔离浏览器历史与存储，按用途限制定位、摄像头、麦克风、通知、扩展与同步，让程序和浏览器只承担当前用途。
 
-当前已实现服务器进程运行、浏览器代理接入、环境检测、独立连接交付及服务恢复；新增 `browser-workspace` 可为用户选择的 Chromium 浏览器创建独立配置，默认限制上述四项权限、关闭扩展与同步，并配置 SOCKS5 和 WebRTC UDP 策略。已有指纹浏览器则由 Agent 在其配置界面或受支持 API 中设置，并复测。
+当前已实现服务器进程包裹、代理联网、环境检测、独立连接交付及服务恢复；`browser-workspace` 可为用户选择的 Chromium 浏览器创建独立配置，默认限制上述四项权限、关闭扩展与同步，并配置 SOCKS5 和 WebRTC UDP 策略。已有指纹浏览器则由 Agent 在其配置界面或受支持 API 中设置，并复测。
 
 应用请求、账号历史与服务端记录由平台掌握；本项目控制和验证的是运行环境、浏览器设置及网络路径。具体实测状态见[验收矩阵](docs/implementation/acceptance-matrix.md)。
 
@@ -52,9 +52,10 @@ Agent 负责推进：**扫描当前环境 → 确认配置需求 → 准备 VPS 
 故有了本项目：知彼，所谓知己知彼，百战不殆。
 
 本项目主要包含三部分：
+
 1. **本地化的环境检测**：测量、判读和报告都在你自己的机器上完成，不经过第三方检测站，也不上传 Cookie 与登录凭据。边界要说清楚：免 Key 的情报查询仍会让对应服务看到待查 IP；「本地」指采集与报告处理，不代表完全离线（[数据流说明](docs/reference/privacy.md)）。
 2. **环境判读 Skill**：不替你做决定，也不推荐任何服务商。它测量你的实际环境，把每一项发现分成技术问题、渠道问题、合规问题三类——技术问题能修，渠道问题要换路，合规问题没有技术解。
-3. **稳定使用实操 Tutorial**：基于我本人稳定持有 3 个账号的使用经验整理出的实操教程。对于很多人来说，可能这部分才是更关键的；其余的检测流程直接交给 Agent 即可自动完成。
+3. **专用环境搭建与交付**：在 VPS 上包裹应用进程，接通本地浏览器，并交付可以独立使用的启动、停止与恢复入口。
 
 这就是为什么我们要做这件事。
 
@@ -74,11 +75,11 @@ python3 scripts/install_skill.py --host codex
 
 安装器会构建完整 Skill，包括脚本、参考资料与内置核心；已有安装不会覆盖。其他宿主用 `--dest /path/to/skills/zhibi` 指定目录。安装完成后，新开 Agent 会话调用知彼。
 
-发布包上线后，也可以下载 `Releases` 页面的 `zhibi-skill.zip`，将完整 `zhibi` 文件夹解压到下面的安装位置。不要只复制 SKILL.md。
+当前 v0.4.0a1 安装包仍为发布草稿，请先使用上述源码安装方式。
 
 | 宿主 | 安装位置 | 调用 |
 | --- | --- | --- |
-| Codex 桌面端（推荐，具备 computer use） | `~/.agents/skills/zhibi/` | `$zhibi` |
+| Codex | `~/.agents/skills/zhibi/` | `$zhibi` |
 | 其他 Agent 宿主 | 由 `scripts/install_skill.py --dest` 指定 | 按宿主方式调用 Skill |
 
 例如：
@@ -106,7 +107,7 @@ Windows 将 `~` 替换为用户目录，Python 命令使用 `py -3`。
 | IP 标签与历史记录 | 已查项未命中 | 保留当前配置 |
 | 专用环境 IPv6 | 待核对配置 | Agent 检查生效设置，再复查 |
 
-“请求超时”和“没有配置额外 Key”不会被包装成风险分；也不会为了让表格全绿就改你的设置。报告描述本次观测，不保证 目标服务 的账号处置结果。
+“请求超时”和“没有配置额外 Key”不会被包装成风险分；也不会为了让表格全绿就改你的设置。报告描述本次实际观测与配置结果。
 
 ## 自动化到哪一步
 
@@ -121,20 +122,20 @@ computer use 负责真实界面操作，本地脚本负责测量、查询和报�
 
 默认核对实际出口、可用 IP 标签与记录、专用环境 IPv6 策略。WebRTC 等深入检查按具体问题选择。定位到某项问题后才展开对应教程和工具，避免把整套功能清单交给用户。
 
-涉及验证、付款、权限或超出既有授权的修改时，Agent 留下明确接手点。作者三个账号的详细流程仍待补充；目前提供的是环境检查与配置协助，不冒充已完成的注册教程。
+需要账号登录、付款或宿主未提供的操作权限时，由用户接手相应步骤，再继续复查。
 
 ## 检查之后直接使用
 
-当前开发版增加了 VPS 进程与本地浏览器的连接入口。你可以只检查，也可以让 Agent 继续准备运行环境。浏览器品牌由你选择，支持 SOCKS5 的普通浏览器和指纹浏览器均可按相同协议接入，具体品牌需要逐个验证。
+知彼提供 VPS 进程与本地浏览器的连接入口。你可以只检查，也可以让 Agent 继续准备运行环境。浏览器品牌由你选择，支持 SOCKS5 的普通浏览器和指纹浏览器均可按相同协议接入，具体品牌需要逐个验证。
 
 主流程：**扫描当前环境 → 询问是否配置 → 准备 VPS 并运行命令 → 配置所选浏览器 → 实际复测与交付。**
 
 - **交互式程序或一次性命令**：`connect` 通过 SSH 执行用户提供的私人脚本，可分配终端，同时提供本机 SOCKS5。
-- **后台服务**：`build` 用 systemd 托管适合后台运行的程序，保存部署原值和服务恢复回执。已有服务替换前备份，启动失败时尝试恢复。
+- **后台服务**：`runtime-service` 托管私人网关与可选后台应用，提供故障重启和恢复回执；需要系统级服务部署时使用 `build`。
 - **后续自己使用**：`connect --export-out` 生成独立启动文件夹，包含 `start.py`、通用浏览器代理参数与使用说明。需要本机 Python、SSH 和原密钥；不依赖继续打开 Agent 会话。
 - **验证**：`connection-check` 检查指定代理的出口；`session` 测实际浏览器；`accept` 和 `deliver` 保留两端结果。应用的实际操作仍须成功，才能宣布可用。
 
-命令示例（由 Agent 补齐本次参数并执行）：
+命令示例（由 Agent 补齐本次参数并执行）。下文的 `zhibi` 表示命令入口；通过 Skill 安装时，使用 `python3 ~/.agents/skills/zhibi/scripts/zhibi.py` 代替，无需另外安装 CLI。
 
 ```bash
 # 仅导出，不连接；该目录包含私人连接信息
@@ -161,7 +162,7 @@ zhibi process-entry --workspace PROFILE --name myapp --program /opt/app/bin/myap
 
 执行输出中的 `activate` 命令，将专用入口放在当前 shell 的 PATH 前面；用 `type -a myapp` 排查同名别名或函数，用 `command -v myapp` 确认指向生成的入口。需要长期使用时，将该 PATH 设置写入对应 shell 配置。启动器缺失或 bwrap 不可用时直接失败。应用更新在宿主侧进行，工作区内应用目录保持只读。
 
-默认网络模式 `isolated` 没有外部连接；显式 `--network host` 使用服务器现有网络；`--network proxy` 在无外部路由的网络空间内，通过私人 Unix SOCKS5 socket 与固定 SHA256 的 graftcp 联网。`proxy-gateway` 可在服务器启动该私人端点。TCP、DNS、子进程、IPv4/IPv6 直接 UDP 阻断和代理停止后的失败行为已在 Linux 隔离测试中验证；项目网关的真实 HTTPS 请求也已通过。持续托管与完整应用交付仍需验收。详细参数见 [进程包裹](docs/implementation/process-wrapper.md)。
+默认网络模式 `isolated` 没有外部连接；显式 `--network host` 使用服务器现有网络；`--network proxy` 在无外部路由的网络空间内，通过私人 Unix SOCKS5 socket 与固定 SHA256 的 graftcp 联网。`proxy-gateway` 可在服务器启动该私人端点。TCP、DNS、子进程、IPv4/IPv6 直接 UDP 阻断和代理停止后的失败行为已在 Linux 隔离测试中验证；项目网关的真实 HTTPS 请求也已通过。持续托管已通过真实 systemd 安装、故障重启和恢复验证；登录后的实际应用流程仍需按使用场景验收。详细参数见 [进程包裹](docs/implementation/process-wrapper.md)。
 
 需要持续运行时，`runtime-service --workspace PROFILE --name zhibi-NAME --out SERVICE_DIR` 生成用户级 systemd 网关服务及独立的安装、状态、恢复命令。可在末尾追加 `-- PROGRAM ARGS...` 同时托管非交互后台应用；交互式应用继续通过命令入口启动。已有同名服务不覆盖，新服务安装失败自动恢复，网关异常会触发整套后台运行环境重启。
 
@@ -175,11 +176,11 @@ zhibi process-entry --workspace PROFILE --name myapp --program /opt/app/bin/myap
 
 社区经验和公开政策帮助提出检查假设；它们需要来源、适用条件和可复现的验证。证据 Graph 留在研究与解释层，供追溯判断依据。
 
-[研究方法](docs/reference/research-method.md) · [风控层级](docs/reference/risk-layers.md) · [作者实践专区](docs/archive/tutorials/author/README.md)
+[研究方法](docs/reference/research-method.md) · [风控层级](docs/reference/risk-layers.md)
 
 ## 可选能力
 
-已有能力全部保留。需要额外数据或遇到具体问题时，让 Agent 按需启用：
+需要额外数据或遇到具体问题时，让 Agent 按需启用：
 
 - **更多 IP 情报**：IPQS、AbuseIPDB、ipapi.is 等；[免费额度与 Key 配置](docs/archive/tutorials/providers.md)。
 - **深入环境诊断**：WebRTC、DNS、浏览器属性与渲染、名单与连通性；[可选模块说明](docs/archive/tutorials/optional-modules.md)。
@@ -188,15 +189,9 @@ zhibi process-entry --workspace PROFILE --name myapp --program /opt/app/bin/myap
 [完整能力与状态](docs/architecture/capability-coverage.md)是查阅目录，不是新用户待办清单。全量模式仍可显式使用；其结果放在报告的可选检查中，不扩大主结论的范围。
 
 <details>
-<summary>源码安装、手动命令与无 Agent 入口</summary>
+<summary>手动命令与无 Agent 入口</summary>
 
-```bash
-git clone https://github.com/yinwu01/zhibi.git
-cd zhibi
-python3 scripts/install_skill.py --host codex
-```
-
-其他宿主用 `--dest` 指向自己的 skills 目录。实际浏览器的默认检查：
+完成上面的 Skill 安装后，实际浏览器的默认检查命令是：
 
 ```bash
 python3 ~/.agents/skills/zhibi/scripts/zhibi.py session --preset basic --network
@@ -212,8 +207,21 @@ python3 ~/.agents/skills/zhibi/scripts/zhibi.py session --preset basic --network
 
 报告在本机生成，Cookie、登录凭据和私人快照不上传聊天或检测网站。公网测量及 IP 情报查询仍会让对应服务看到请求 IP 或待查 IP；“本地”指采集与报告处理，不代表完全离线。[数据流说明](docs/reference/privacy.md)
 
-适配了 CCBaga、CheckCC 的部分成熟检测代码，具体版本、许可和改动见[复用记录](docs/research/upstream-reuse.md)。项目自身的诊断与解释会保留证据边界，不把上游经验分数变成 账号处置概率。
+适配了 CCBaga、CheckCC 的部分成熟检测代码，具体版本、许可和改动见[复用记录](docs/research/upstream-reuse.md)。项目自身的诊断与解释会保留证据边界，不把上游经验分数当作账号处置概率。
 
 公开开发预发布版；源码安装当前可用，发布包另行发布。[本轮主流程验收](docs/implementation/acceptance-matrix.md) · [贡献](CONTRIBUTING.md)
 
-[MIT](LICENSE) · [第三方许可](THIRD_PARTY_NOTICES.md) · 独立社区项目，与 上游服务商 无隶属关系。
+[MIT](LICENSE) · [第三方许可](THIRD_PARTY_NOTICES.md) · 独立社区项目，与应用服务商无隶属关系。
+
+## 致谢与参考项目
+
+感谢以下项目的作者与贡献者。知彼的流程设计、检测能力与运行环境搭建，受益于这些公开实践和开源工具：
+
+- [xiaoxiaodong-vps](https://github.com/nevertoday/xiaoxiaodong-vps)：参考 VPS 部署蓝图、Agent Skill 组织与运维流程。
+- [CCBaga](https://github.com/liseami/CCBaga)：参考网络检查与环境配置流程，并适配部分浏览器出口检测代码。
+- [CheckCC](https://github.com/yacuo/check-cc)：适配部分浏览器环境采集、字体探测与研究对照模型。
+- [IPQuality](https://github.com/xykt/IPQuality)：用于 IP 质量检查能力的研究与对照。
+- [bubblewrap](https://github.com/containers/bubblewrap)：用于构建独立的 Linux 进程运行环境。
+- [graftcp](https://github.com/hmgle/graftcp)：用于应用及其子进程的代理网络接入。
+
+具体代码复用、版本与修改记录见[上游复用说明](docs/research/upstream-reuse.md)；版权和许可见[第三方声明](THIRD_PARTY_NOTICES.md)。
