@@ -4,9 +4,17 @@
 
 ## 开发
 
+克隆下来就能跑，不需要安装：
+
+```bash
+./scripts/test.sh                 # 等价于 PYTHONPATH=src python3 -m unittest discover -s tests
+PYTHONPATH=src python3 -m zhibi --help
+```
+
+需要安装时（可选）：
+
 ```bash
 python -m pip install -e '.[dev]'
-python -m unittest discover -s tests -v
 python scripts/build_knowledge_docs.py
 python scripts/check_repository.py
 ```
