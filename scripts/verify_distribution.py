@@ -11,7 +11,7 @@ from zhibi import __version__
 root = Path(__file__).resolve().parents[1]
 wheel = next((root / "dist").glob("zhibi-" + __version__ + "-*.whl"))
 with tempfile.TemporaryDirectory(prefix="zhibi-wheel-") as tmp:
-    directory = Path(tmp)
+    directory = Path(tmp).resolve()
     environment = directory / "env"
     venv.EnvBuilder(with_pip=True).create(environment)
     binary = environment / ("Scripts" if os.name == "nt" else "bin")
@@ -30,6 +30,13 @@ with tempfile.TemporaryDirectory(prefix="zhibi-wheel-") as tmp:
     assert cap["version"] == __version__
     connection = json.loads(run([str(command), "connect", "--host", "example.com"]).stdout)
     assert connection["browser_proxy"]["type"] == "socks5" and not connection["applied"]
+    process = json.loads(run([str(command), "process-workspace", "--workdir", str(directory),
+                              "--out", str(directory / "process")]).stdout)
+    assert Path(process["runner"]).is_file()
+    if os.name != 'nt':
+        entry = json.loads(run([str(command), "process-entry", "--workspace", process["directory"],
+                                "--name", "demo", "--program", "/usr/bin/true"]).stdout)
+        assert Path(entry["entry"]).is_file()
     run([str(command), "demo", "--out", str(directory / "demo")])
     run([str(command), "browser", "--out", str(directory / "browser.html")])
     run([str(command), "browser", "--advanced", "--out", str(directory / "advanced.html")])

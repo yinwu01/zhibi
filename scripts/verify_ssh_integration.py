@@ -18,6 +18,7 @@ from types import SimpleNamespace
 import paramiko
 from zhibi.connect import argv
 from zhibi.connection_bundle import export
+from zhibi.browser_workspace import create as create_browser_workspace
 
 
 def listener():
@@ -192,10 +193,12 @@ with tempfile.TemporaryDirectory(prefix="zhibi-ssh-") as tmp:
         browser_state = "not_exercised"
         chrome = os.environ.get("CHROME_PATH")
         if chrome:
+            workspace = root / "browser-workspace"
+            create_browser_workspace(SimpleNamespace(browser_binary=chrome, local_port=local_port, out=str(workspace)))
+            flags = json.loads((workspace / "browser.private.json").read_text())["flags"]
             browser = subprocess.Popen([chrome, "--headless=new", "--disable-gpu", "--no-first-run",
                 "--disable-background-networking", "--disable-component-update", "--disable-sync",
-                "--user-data-dir=" + str(root / "chrome-profile"),
-                "--proxy-server=socks5://127.0.0.1:" + str(local_port),
+                "--user-data-dir=" + str(workspace / "profile"), *flags,
                 "--dump-dom", "http://zhibi-proxy.test:%d/" % http_listener.getsockname()[1]],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
             try:

@@ -3,6 +3,29 @@ on: [push, pull_request]
 permissions:
   contents: read
 jobs:
+  linux-sandbox:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y bubblewrap
+      - run: python scripts/verify_process_workspace.py
+        env:
+          PYTHONPATH: src
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: Build pinned external graftcp and verify proxy namespace
+        run: |
+          git init "$RUNNER_TEMP/graftcp"
+          git -C "$RUNNER_TEMP/graftcp" fetch --depth 1 https://github.com/hmgle/graftcp.git 574b30bfe1d4d36b3f3bff72041665b4df19573f
+          git -C "$RUNNER_TEMP/graftcp" checkout --detach FETCH_HEAD
+          make -C "$RUNNER_TEMP/graftcp" -j2
+          python scripts/verify_proxy_workspace.py "$RUNNER_TEMP/graftcp/local/graftcp"
+        env:
+          PYTHONPATH: src
   core:
     strategy:
       matrix:
@@ -61,3 +84,4 @@ jobs:
         run: |
           export CHROME_PATH="$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')"
           python scripts/verify_ssh_integration.py
+          python scripts/verify_browser_workspace.py

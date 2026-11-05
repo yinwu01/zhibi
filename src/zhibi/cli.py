@@ -63,7 +63,7 @@ def save_run(report, snapshot, destination=None):
     emit({"directory": str(directory), "report": str(directory / "report.html"), "summary": summary})
 
 
-VISIBLE = {"session", "scan", "check", "connect", "connection-check", "build", "browse", "accept", "deliver", "doctor"}
+VISIBLE = {"session", "scan", "check", "connect", "connection-check", "browser-workspace", "process-workspace", "process-entry", "build", "browse", "accept", "deliver", "doctor"}
 
 
 def _minimal_help(parser):
@@ -187,6 +187,25 @@ def main(argv=None):
     adspower.register(sub)
     from . import remote
     remote.register(sub)
+    p = sub.add_parser("proxy-gateway", help="启动私人 Unix SOCKS5 端点，使用服务器现有出口")
+    p.add_argument("--socket", required=True)
+    p = sub.add_parser("process-entry", help="为现有进程工作区创建专用命令入口")
+    p.add_argument("--workspace", required=True)
+    p.add_argument("--name", required=True)
+    p.add_argument("--program", required=True, help="沙箱内绝对程序路径")
+    p = sub.add_parser("process-workspace", help="创建 bwrap 专用进程环境与独立启动器")
+    p.add_argument("--out", required=True)
+    p.add_argument("--workdir", required=True)
+    p.add_argument("--app-dir")
+    p.add_argument("--timezone", default="Etc/UTC")
+    p.add_argument("--locale", default="C.UTF-8")
+    p.add_argument("--network", choices=("isolated", "host", "proxy"), default="isolated")
+    p.add_argument("--graftcp")
+    p.add_argument("--graftcp-sha256")
+    p.add_argument("--proxy-socket")
+    p.add_argument("--dns-server", default="1.1.1.1")
+    from . import browser_workspace
+    browser_workspace.register(sub)
     from . import connect
     connect.register(sub)
     from . import flow
@@ -210,6 +229,18 @@ def main(argv=None):
             emit(delivery.install(args.archive, args.sha256, args.dest, args.replace))
         elif args.command == "skill-rollback":
             emit(delivery.rollback(args.dest, args.previous))
+        elif args.command == "proxy-gateway":
+            from .proxy_gateway import serve
+            serve(args.socket)
+        elif args.command == "process-entry":
+            from .sandbox import install_entry
+            emit(install_entry(args.workspace, args.name, args.program))
+        elif args.command == "process-workspace":
+            from .sandbox import prepare
+            emit(prepare(args.out, args.workdir, args.timezone, args.locale, args.network, args.app_dir,
+                         args.graftcp, args.graftcp_sha256, args.proxy_socket, args.dns_server))
+        elif args.command == "browser-workspace":
+            emit(browser_workspace.create(args))
         elif args.command == "connect":
             result = connect.run(args)
             emit(result)
