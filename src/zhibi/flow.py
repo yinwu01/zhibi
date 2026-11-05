@@ -1,6 +1,8 @@
 """五步主线的上层编排：看、建、配、验、交。评分与交付都在这层完成。"""
 import json
 import os
+import shlex
+import re
 from html import escape
 from pathlib import Path
 
@@ -63,21 +65,34 @@ def build(args):
     item = _target(args)
     facts = remote.check(item)
     plan = remote.align_plan(facts, args.timezone, args.locale)
+    directory = create_run(args.out) if args.apply else None
+    if directory:
+        write(directory / "before.private.json", {"target": item, "facts": facts, "alignment": plan})
     wrapped = None
-    if args.command:
-        name = args.unit or "zhibi-service"
-        wrapped = remote.wrap_plan(item, name, args.command, args.run_user, args.workdir,
-                                   args.restart, args.memory_mb, args.cpu_percent,
-                                   apply=args.apply)
-    result = {"step": "build", "host": item["host"], "before": facts,
-              "alignment": plan, "service": wrapped, "applied": bool(args.apply),
-              "summary": _build_summary(plan, wrapped, bool(args.apply))}
-    if args.apply:
-        for step in plan:
-            outcome = remote.execute(item, "set -e\n" + step["command"])
-            step["applied"] = outcome["state"] == "ok"
-        result["after"] = remote.check(item)
-    return result
+    result = {"step": "build", "host": item["host"], "connection": item, "before": facts,
+              "alignment": plan, "service": None, "applied": False}
+    try:
+        if args.apply:
+            for step in plan:
+                outcome = remote.execute(item, "set -e\n" + step["command"])
+                step["applied"] = outcome["state"] == "ok"
+                if not step["applied"]:
+                    raise InputError("环境设置失败，已保存原值和部分结果；请先恢复或处理错误。")
+        if args.command:
+            name = args.unit or "zhibi-service"
+            wrapped = remote.wrap_plan(item, name, args.command, args.run_user, args.workdir,
+                                       args.restart, args.memory_mb, args.cpu_percent,
+                                       apply=args.apply)
+            result["service"] = wrapped
+        result["applied"] = bool(args.apply) and (not wrapped or wrapped["applied"])
+        result["summary"] = _build_summary(plan, wrapped, result["applied"])
+        if args.apply:
+            result["after"] = remote.check(item)
+        return result
+    finally:
+        if directory:
+            result["directory"] = str(directory)
+            write(directory / "build.private.json", result)
 
 
 def _build_summary(plan, wrapped, applied):
@@ -121,36 +136,58 @@ def browse(args):
             "notice": "填完必须关掉浏览器再重开，然后重新测一遍才算生效。"}
 
 
+def browser_readings(path):
+    """Normalize validated probe exports; stale/automated observations cannot pass."""
+    from .browser import parse_bundle
+    from .models import timestamp
+    from .scan import browser_paths
+    with open(path, encoding="utf-8") as handle:
+        bundle = parse_bundle(json.load(handle))
+    context = next(o for o in bundle["observations"] if o["check_id"] == "browser.context")
+    facts = context["facts"]
+    fresh = lambda at: -60 <= (timestamp(now()) - timestamp(at)).total_seconds() <= 900
+    if context["status"] != "ok" or facts.get("automated") or not fresh(context["at"]):
+        return {}
+    readings = {"timezone": facts.get("timezone"), "language": facts.get("language")}
+    egress = next(o for o in bundle["observations"] if o["check_id"] == "browser.egress")
+    if egress["status"] == "ok" and fresh(egress["at"]):
+        readings["egress_ip"] = egress["facts"]["ip"]
+    paths, _, _ = browser_paths(bundle, [], {"route_intent": "proxy"})
+    rtc = next((p for p in paths if p["id"] == "path:webrtc"), {})
+    relation = rtc.get("https_relation")
+    readings["webrtc_leak"] = {"different": True, "same_observed": False}.get(relation)
+    return readings
+
+
 def accept(args):
     """两端逐项对撞并重新评分。没有本地读数时，本机项记为未测量。"""
     item = _target(args)
     facts = remote.check(item, egress=getattr(args, "egress", False))
     unit_state = enabled = None
     if args.unit:
+        remote._check(remote.UNIT, args.unit, "服务名无效。")
         outcome = remote.execute(item, "systemctl is-active " + args.unit)
         unit_state = outcome["value"].strip() if outcome["state"] == "ok" else None
         outcome = remote.execute(item, "systemctl is-enabled " + args.unit)
         enabled = outcome["value"].strip() == "enabled" if outcome["state"] == "ok" else None
     far = remote.verify(facts, args.timezone, args.locale, args.unit, unit_state)
     local_readings = {}
-    if args.browser:
-        from .browser import parse_bundle
-        with open(args.browser, encoding="utf-8") as handle:
-            local_readings = parse_bundle(json.load(handle)) or {}
+    if getattr(args, "browser", None):
+        local_readings = browser_readings(args.browser)
     near = []
     for key, expect, measured in (
             ("时区", args.timezone, local_readings.get("timezone")),
             ("语言", args.language, local_readings.get("language")),
             ("对外身份", facts.get("egress_ip"), local_readings.get("egress_ip")),
-            ("泄漏", "无", "有" if local_readings.get("webrtc_leak") else None)):
-        state = "not_measured" if measured in (None, "") else ("ok" if str(measured) == str(expect) else "fail")
+            ("WebRTC 与 HTTPS 出口", "一致", {True: "不同", False: "一致"}.get(local_readings.get("webrtc_leak")))):
+        state = "not_measured" if measured in (None, "") or expect in (None, "") else ("ok" if str(measured) == str(expect) else "fail")
         near.append({"key": key, "expected": expect, "measured": measured, "state": state})
     result_score = scoring.score(
         egress=_egress(facts), facts=facts, expect_tz=args.timezone, expect_locale=args.locale,
         dns=_dns(facts), webrtc={"leak": local_readings.get("webrtc_leak")},
         service={"active": unit_state == "active" if unit_state else None,
                  "enabled": enabled})
-    return {"step": "accept", "host": item["host"], "remote": far, "local": near,
+    return {"step": "accept", "host": item["host"], "at": now(), "facts": facts, "remote": far, "local": near,
             "score": result_score, "headline": _headline({"score": result_score}),
             "notice": "远端与本地分开计数；未测量的项不计入通过。"}
 
@@ -167,7 +204,7 @@ FIRST_READ = """# 先读我
 
     {stop}
 
-## 想全部撤回
+## 想恢复本轮服务与时区
 
     bash rollback.sh
 
@@ -179,8 +216,8 @@ FIRST_READ = """# 先读我
 | remote.md | 服务器上改了什么、日志在哪看 |
 | browser.md | 浏览器每个字段填了什么、为什么 |
 | verification.json | 两端读数与逐项结果 |
-| reproduce.sh | 从零再来一遍 |
-| rollback.sh | 全部撤回 |
+| reproduce.sh | 重新检查服务器 |
+| rollback.sh | 按部署回执恢复服务与时区 |
 """
 
 
@@ -195,7 +232,7 @@ def render_html(report):
     checks = "".join(
         "<tr><td>%s</td><td>%s</td><td>%s</td></tr>" % (
             escape(str(c.get("key"))), escape(str(c.get("measured"))), escape(c.get("state", "")))
-        for c in (report.get("remote") or {}).get("checks", []))
+        for c in (report.get("remote") or {}).get("checks", []) + report.get("local", []))
     facts = "".join("<tr><td>%s</td><td>%s</td></tr>" % (escape(k), escape(str(v)))
                     for k, v in sorted((report.get("facts") or {}).items()))
     color = LEVEL_COLOR.get(s["level"], "#5b6470")
@@ -228,22 +265,44 @@ th{{color:#666;font-weight:600}} .muted{{color:#777;font-size:13px}}
 def deliver_files(destination, report, unit=None, timezone=None, locale=None, facts=None):
     """Write the folder the user keeps. Pure file work, no network."""
     destination = Path(destination)
-    destination.mkdir(parents=True, mode=0o700, exist_ok=False)
     s = report["score"]
     summary = "；".join(report.get("headline") or [s["label"]])
+    target = report.get("connection") or remote.target(report["host"])
+    def on_server(command):
+        return " ".join(shlex.quote(v) for v in remote.ssh_argv(target, command))
+    if unit:
+        remote._check(remote.UNIT, unit, "服务名无效。")
+    stop = on_server("systemctl stop " + unit) if unit else "本次没有后台服务。"
+    receipt = report.get("deployment") or {}
+    recovery = (receipt.get("service") or {}).get("rollback")
+    if recovery and not re.fullmatch(r"sh /var/lib/zhibi/deployments/[a-f0-9]{32}/rollback\.sh", recovery):
+        raise InputError("部署恢复路径无效。")
+    destination.mkdir(parents=True, mode=0o700, exist_ok=False)
     write(destination / "先读我.md", FIRST_READ.format(
-        summary=summary, stop="systemctl stop " + (unit or "<服务名>")))
+        summary=summary, stop=stop))
     write(destination / "报告.html", render_html(report))
     write(destination / "verification.json", report)
-    write(destination / "remote.md", "# 服务器上做了什么\n\n" + json.dumps(
-        report.get("facts") or facts or {}, ensure_ascii=False, indent=2) + "\n")
-    write(destination / "browser.md", "# 浏览器要填什么\n\n" + json.dumps(
-        {"时区": timezone, "语言": locale, "WebRTC": "跟随通道"}, ensure_ascii=False, indent=2) + "\n")
-    write(destination / "reproduce.sh", "#!/bin/sh\nset -e\nzhibi check --host "
-          + str(report.get("host", "")) + " --egress\n")
-    write(destination / "rollback.sh", "#!/bin/sh\nset -e\n"
-          + ("systemctl disable --now " + unit + "\n" if unit else "")
-          + "echo '其余改动按 remote.md 的回滚命令逐条执行。'\n")
+    write(destination / "remote.md", "# 服务器观测与部署记录\n\n" + json.dumps(
+        {"facts": report.get("facts") or facts or {}, "deployment": receipt,
+         "stop": stop, "logs": on_server("journalctl -u " + unit + " -n 50 --no-pager") if unit else None},
+        ensure_ascii=False, indent=2) + "\n")
+    write(destination / "browser.md", "# 浏览器实际验收\n\n" + json.dumps(
+        {"checks": report.get("local", []), "timezone_target": timezone,
+         "locale_target": locale, "notice": "这里只记录观测与目标，不代表已经修改配置。"},
+        ensure_ascii=False, indent=2) + "\n")
+    recheck = ["zhibi", "check", "--host", target["host"], "--user", target["user"], "--port", str(target["port"])]
+    if target.get("identity"):
+        recheck += ["--identity", target["identity"]]
+    recheck += ["--egress"]
+    write(destination / "reproduce.sh", "#!/bin/sh\nset -e\n" + " ".join(shlex.quote(v) for v in recheck) + "\n")
+    commands = [on_server(recovery)] if recovery else []
+    for change in reversed(receipt.get("alignment", [])):
+        if change.get("applied") and change.get("id") == "timezone":
+            old = remote._check(remote.TZONE, change.get("before"), "原时区无效。")
+            commands.append(on_server("timedatectl set-timezone " + old))
+    write(destination / "rollback.sh", "#!/bin/sh\nset -e\n" + (
+        "\n".join(commands) + "\n" if commands else
+        "echo '没有本次部署回执，不能自动恢复。请提供 --build-receipt。' >&2\nexit 1\n"))
     if os.name == "posix":
         for name in ("reproduce.sh", "rollback.sh"):
             os.chmod(destination / name, 0o700)
@@ -252,20 +311,16 @@ def deliver_files(destination, report, unit=None, timezone=None, locale=None, fa
 
 def deliver(args):
     item = _target(args)
-    facts = remote.check(item, egress=getattr(args, "egress", False))
-    unit_state = enabled = None
-    if args.unit:
-        outcome = remote.execute(item, "systemctl is-active " + args.unit)
-        unit_state = outcome["value"].strip() if outcome["state"] == "ok" else None
-        outcome = remote.execute(item, "systemctl is-enabled " + args.unit)
-        enabled = outcome["value"].strip() == "enabled" if outcome["state"] == "ok" else None
-    far = remote.verify(facts, args.timezone, args.locale, args.unit, unit_state)
-    result_score = scoring.score(
-        egress=_egress(facts), facts=facts, expect_tz=args.timezone, expect_locale=args.locale,
-        dns=_dns(facts),
-        service={"active": unit_state == "active" if unit_state else None, "enabled": enabled})
-    report = {"host": item["host"], "at": now(), "facts": facts, "score": result_score,
-              "remote": far, "headline": _headline({"score": result_score})}
+    report = accept(args)
+    report["step"] = "deliver"
+    facts, result_score = report["facts"], report["score"]
+    report["connection"] = item
+    if getattr(args, "build_receipt", None):
+        with open(args.build_receipt, encoding="utf-8") as handle:
+            receipt = json.load(handle)
+        if receipt.get("connection") != item or receipt.get("step") != "build":
+            raise InputError("部署回执与当前目标不一致。")
+        report["deployment"] = receipt
     base = Path(os.path.expanduser(args.out or "~/Desktop")).absolute()
     folder = base / ("zhibi-" + item["host"].replace(".", "-") + "-" + now()[:10])
     if folder.exists():
@@ -278,8 +333,13 @@ def deliver(args):
 
 
 def dispatch(args):
-    return {"check": check, "build": build, "browse": browse,
-            "accept": accept, "deliver": deliver}[args.command](args)
+    result = {"check": check, "build": build, "browse": browse,
+              "accept": accept, "deliver": deliver}[args.command](args)
+    if args.command in ("check", "browse", "accept") and getattr(args, "out", None):
+        directory = create_run(args.out)
+        write(directory / (args.command + ".private.json"), result)
+        result["directory"] = str(directory)
+    return result
 
 
 def register(sub):
@@ -299,6 +359,8 @@ def register(sub):
         p.add_argument("--out", help="交付目录，默认桌面")
         p.add_argument("--egress", action="store_true",
                        help="允许服务器发起两次查询以取得自己的对外身份（可选）")
+        if name == "deliver":
+            p.add_argument("--build-receipt", help="本轮 build.private.json，用于生成远端恢复步骤")
         if name == "build":
             p.add_argument("--command", help="要长期运行的命令，由用户提供，原样使用")
             p.add_argument("--run-user", default="root")
@@ -307,6 +369,6 @@ def register(sub):
             p.add_argument("--memory-mb", type=int)
             p.add_argument("--cpu-percent", type=int)
             p.add_argument("--apply", action="store_true", help="真正执行；默认只出计划")
-        if name == "accept":
+        if name in ("accept", "deliver"):
             p.add_argument("--language", help="本地浏览器语言")
             p.add_argument("--browser", help="本地浏览器读数 JSON")

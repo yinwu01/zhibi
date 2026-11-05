@@ -1,131 +1,46 @@
 ---
 name: zhibi
-description: Prepare a user's own Linux server and local fingerprint browser so both look like the same machine, then verify it and deliver an environment file. Use when the user wants a working network environment on their VPS, asks for server setup, browser alignment, or a recheck.
+description: Inspect the user's actual browser and VPS network, optionally prepare a Linux process and a local browser connection, then verify and deliver the working environment. Use for network checks, VPS process hosting, browser proxy setup, and rechecks.
 ---
 
-# 知彼 · 让 Agent 把环境搭好、验好、交到手上
+# 知彼
 
-One task ends when the user has a **working environment** and a **folder they can keep**: the service running on their server, their local browser matching it, one verification result, and instructions for stopping or undoing everything.
+用用户能理解的话解释现状、需要的操作和验证结果。主线是：扫描与判断 → 询问配置需求 → VPS 服务和进程 → 本地浏览器 → 总体验收。仅检查也是完整任务，不要求用户先提供 VPS 或命令。
 
-## 唯一一条说话规则（违反即失败）
+脚本入口为本 Skill 下的 `scripts/zhibi.py`。由 Agent 运行命令；安装依赖和界面操作根据宿主、系统及用户现状安排。已有授权继续有效，缺什么问什么。
 
-**跟用户说的每一句话，必须让不懂计算机网络的人听懂。报告可以详尽，对话必须人话。**
+## 1. 扫描与判断
 
-| 不要这样说 | 这样说 |
-|---|---|
-| 出口 IP / egress | 你这台机器在网上的身份 |
-| DNS 泄漏 | 你上网时"查地址"的请求跑到了别处，没走你设的通道 |
-| WebRTC 泄漏 | 浏览器有个小便道，会把你的真实位置漏出去 |
-| locale | 系统语言设置 |
-| systemd unit | 让程序在后台一直跑、关机重启后自己起来的那份配置 |
-| 时区不一致 | 机器认为的时间和它所在的地方对不上 |
-| NTP 未同步 | 机器的时钟不准 |
-| 机房 IP / ASN | 这个地址属于数据中心，不是家庭宽带 |
-| 代理未生效 | 你设的通道没起作用 |
-| `not_measured` | 这一项没测 |
+先确定用户实际使用的浏览器、机器和已有线路。运行 `doctor` 检查工具条件；`session --preset basic --network` 在实际浏览器采集，必要时使用 `--file`。不要用 Agent 的浏览器或终端出口替代用户环境。
 
-术语第一次出现时用人话解释一次，之后可以继续用。**不确定用户能不能听懂，就再说一遍人话。**
+有用户指定的 VPS 时用 `check --host HOST --egress` 读取远端现状。`scan`、`suite` 保留深入检查，按问题选模块。外部查询只在允许范围内执行；原始配置和凭据留在本机。
 
-## DAG（串行，一条主线）
+以具体观测解释结果。数据中心标签、公共 DNS、中文语言或不同系统本身不构成失败；现有评分仅供背景，不能据此要求更换线路。说明已测、未测以及实际需要处理的问题。
 
-```
-N1 受理 → N2 本机体检 → N3 远端体检 → N4 出计划 ═ G1 用户确认 ═ → N5 远端部署 → N6 本机浏览器 → N7 两端验收 → N8 交付
-                                                                        ↑                │
-                                                                        └── G2 不一致 ────┘
-```
+## 2. 询问配置需求
 
-| 节点 | 做什么 | 用户看到什么 |
-|---|---|---|
-| N1 受理 | 收齐两个输入：要跑的命令 + 服务器怎么连 | 一次提问，只问缺的 |
-| N2 本机体检 | 系统、Python、指纹浏览器在不在、能不能点按操作 | 一句话结论 |
-| N3 远端体检 | 服务器的时间、语言、时钟、解析器、资源、对外身份 | 一句话结论 + 一个分数 |
-| N4 出计划 | 把发现合成分数、要改什么、浏览器要填什么 | **三行摘要 + 一句“要不要开始”** |
-| **G1** | 用户点头。**全程只需要这一次确认** | — |
-| N5 远端部署 | 让命令在后台常驻 + 对齐时间与语言 | 两句话：做了什么、现在什么状态 |
-| N6 本机浏览器 | 按服务器的读数反推浏览器该填什么并写入 | 两句话 |
-| N7 两端验收 | 服务器 4 项 + 本机 4 项逐条对撞 | **一张表，每项一句话** |
-| N8 交付 | 一个文件夹 + 一份 HTML 报告 | 文件夹路径 |
+用户仅要求检查时先交付结果。需要配置时补齐 VPS 登录方式、用户提供的启动命令，以及是否使用指纹浏览器。允许已有普通浏览器、任意支持代理的指纹浏览器或只使用远端进程。不要默认品牌。
 
-每个节点的中间结果落盘到 `~/.zhibi/sessions/<id>/`。中断后从断点续跑，不重跑已完成节点。
+按 [intake](references/intake.md) 收集信息，检查现有软件、服务和端口，给出具体修改计划。用户已授权的步骤直接继续；新增范围才补问。不购买资源、不代替用户登录账号。
 
-**G2 回到 N6 的条件**：本机任一项不通过，或任一项未测量。改动前先留快照。
+## 3. VPS 服务与进程
 
-## 用户只用做三件事
+阅读 [runtime](references/runtime.md) 和 [remote](references/remote.md)。根据命令的真实运行方式选择交互终端、一次性执行或后台服务。准备依赖时根据实际 Linux 发行版、安装渠道和权限安排，安装后验证可执行文件和版本。不要改变用户命令的用途。
 
-1. 说一句话（要跑什么、服务器怎么连）
-2. 看三行摘要，点一次头
-3. 收一个文件夹
+`connect` 可以同时提供本机 SOCKS5 与远端进程；`build` 用于非交互后台服务，默认只出计划。后台常驻不等于应用可用，必须检查日志和用户所需的应用操作。先保存原值和已有服务配置，再执行授权的变更。
 
-其余全部由你完成。不要给用户逐步教程，不要让用户自己敲命令——除非宿主没有 computer use 能力，那时只交接无法自动完成的那一步。
+## 4. 浏览器
 
-## 分数怎么用
+阅读 [browser](references/browser.md)。用户可以自行配置或委托 Agent。API、computer use 或手动均可；以实际浏览器版本和官方说明选择方式。配置目标固定，点击步骤灵活。
 
-体检会给出一个 0–100 的分数和五个分项。**跟用户只说等级和人话，不要把分项字段名拌出来。**
+## 5. 总体验收与交付
 
-| 分项 | 人话叫法 | 看什么 |
-|---|---|---|
-| egress | 对外身份 | 这条线路是家庭宽带还是机房 |
-| consistency | 内部一致性 | 时间、语言、时钟对不对得上 |
-| leakage | 泄漏 | 解析和浏览器会不会把真实位置漏出去 |
-| reputation | 信誉读数 | 情报源给的分（可选，不查就是未测） |
-| stability | 稳定性 | 程序在不在跑、重启会不会自己起 |
+在隧道实际运行时，从指定浏览器重新采集，测出口和所选 DNS/WebRTC 项。用 `accept --host HOST --egress --browser FILE` 比对；只有用户确实选择了时区/语言目标才传对应参数。`deliver` 同样接收 `--browser`，将两端结果保存到本机。
 
-规则：
+按 [deliver](references/deliver.md) 保存启动入口与报告。检查进程的实际操作是否成功、浏览器是否可以正常访问用户需要的服务，由用户在浏览器完成账号登录。还要验证停止连接及恢复原配置。缺失观测不能算通过；未解决的问题写清影响，不能把部分结果说成全部可用。
 
-- **覆盖率低于 50% 不给等级**，只说“证据不足”。
-- **未测项不计入分数**，也不当通过，要单独列出来。
-- 分数只能描述“这次测到的项”，不能说成账号安全、不能预测结果。
-- 高风险项要一一条给出“为什么”和“能不能修”。
+`build --apply` 保存私人原值与部署回执；交付时传 `--build-receipt`，生成作用于该 VPS 的服务与时区恢复命令。安装依赖、语言生成和浏览器修改仍需记录各自恢复方式，不能承诺这些都由脚本自动恢复。check/browse/accept 使用 `--out` 保存阶段结果，build --apply 保存原值和回执；其余阶段过程由 Agent 在私人会话目录保存，恢复任务时先读文件并核对实际状态；不能假定 CLI 已有自动断点恢复。
 
-## Computer Use
+## 必要边界
 
-本 Skill **不安装** computer use、不授予权限。有就用，没有就降级，绝不假装完成。
-
-指纹浏览器三档（详见 [browser](references/browser.md)）：
-
-| 档 | 条件 | 做法 |
-|---|---|---|
-| 自动 | 浏览器本地 API 已开启 | 直接写配置，不点击 |
-| 半自动 | API 未开启 | 用 computer use 点击：选中环境 → 编辑 → 填时间和语言 → 保存 → 关掉再开 → 读回验证 |
-| 手动 | 宿主无 computer use | 只交接这一步，给一张"填什么"对照表，等用户回来继续 N7 |
-
-## 失败时怎么说
-
-一句话说清，然后停下。不要绕路，不要伪造成功。
-
-- 连不上服务器：`我连不上这台服务器，先确认地址和登录方式。`
-- 命令起不来：`命令在这台服务器上启动失败，日志我读过了，是这个错：…`
-- 没验证：`配置已经改了，但还没有重新测过，所以现在还不能算成功。`
-- 地区不对：`这不是改设置能解决的问题，属于地区限制，改配置解决不了。`
-- 拿不到官方安装包：`我拿不到官方安装包，不会从第三方网站下载。`
-
-## 边界
-
-- **不推荐、不返佣、不销售**任何 VPS、代理、指纹浏览器或服务。
-- **不代装、不代搜、不改写**用户给的启动命令；命令由用户提供，原样使用。
-- **不管账号**：不注册、不验证、不代付、不做多账号切换。
-- **不提供绕过地区限制的能力**。地区不符 → 属于合规问题，结论是停止。
-- **不承诺**通过、匿名或账号安全。没测就是没测。
-
-## 命令
-
-```bash
-python3 <this-skill>/scripts/zhibi.py check  --host <host> --egress             # N3，--egress 才查对外身份
-python3 <this-skill>/scripts/zhibi.py build  --host <host> --command "..."      # N5，默认只出计划
-python3 <this-skill>/scripts/zhibi.py browse --host <host>                      # N6
-python3 <this-skill>/scripts/zhibi.py accept --host <host> --egress --unit ...  # N7
-python3 <this-skill>/scripts/zhibi.py deliver --host <host> --egress --unit ... # N8
-python3 <this-skill>/scripts/zhibi.py doctor                                    # N2
-```
-
-`build` 默认只打印计划，加 `--apply` 才真正执行。密钥与服务器地址只在本机使用，不上传、不外发。
-
-## 按节点加载
-
-- [intake](references/intake.md) — N1：问什么、不问什么
-- [remote](references/remote.md) — N3 / N5 / N7
-- [browser](references/browser.md) — N6 / N8，含三档操作
-- [deliver](references/deliver.md) — N8：交付什么、怎么说
-- [boundaries](references/boundaries.md) — 声明纪律与判读三分法
-
-HTML 报告由 `deliver` 生成，保留完整技术细节；给用户的对话只用上面那套人话。
+服务端进程与本地浏览器可以共用出口，但这不意味着它们是同一设备，也不保证账号结果。只管理用户授权的环境；不收集 Cookie 或账号凭据。遵循用户选用软件的实际使用要求，不用泛化的产品禁令或幽默免责声明替代事实。

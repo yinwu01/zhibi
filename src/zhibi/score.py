@@ -2,7 +2,7 @@
 from .models import InputError
 
 LEVELS = ((80, "low"), (60, "medium"), (0, "high"))
-LABELS = {"low": "低风险", "medium": "中风险", "high": "高风险"}
+LABELS = {"low": "已测项基本符合配置目标", "medium": "部分配置需要核对", "high": "存在配置问题"}
 
 # 维度权重。总和 100；未测维度不参与加权，覆盖率单独报告。
 WEIGHTS = {
@@ -45,15 +45,10 @@ def egress_dimension(egress):
     datacenter = egress.get("datacenter")
     if datacenter is None:
         datacenter = looks_datacenter(org)
-    if datacenter is None and not org:
-        return _dim("egress", "对外身份", WEIGHTS["egress"], 0, "not_measured",
-                    ["没有读到这条线路的归属信息。"], "先取得出口 IP 与归属再判断。")
-    if datacenter:
-        return _dim("egress", "对外身份", WEIGHTS["egress"], 25, "fail",
-                    ["这条线路属于数据中心（%s），不是家庭宽带。" % (org or "机房段")],
-                    "数据中心段更容易被识别为服务器；这条只能在选线路时解决，改配置改不掉。")
-    return _dim("egress", "对外身份", WEIGHTS["egress"], 90, "ok",
-                ["这条线路看起来是宽带运营商（%s）。" % org])
+    label = "数据中心" if datacenter is True else "运营商" if datacenter is False else "未知类型"
+    return _dim("egress", "出口归属（背景）", WEIGHTS["egress"], 0, "not_measured",
+                ["组织信息：%s；名称推测为%s。归属标签不证明路径可用或账号风险。" % (org or "未取得", label)],
+                None)
 
 
 def consistency_dimension(facts, expect_tz=None, expect_locale=None):
@@ -61,7 +56,9 @@ def consistency_dimension(facts, expect_tz=None, expect_locale=None):
     tz = (facts or {}).get("tz")
     if expect_tz:
         measured += 1
-        if tz != expect_tz:
+        if tz in (None, "", "unknown"):
+            measured -= 1
+        elif tz != expect_tz:
             score -= 40
             reasons.append("机器认为自己在 %s，但预期是 %s。" % (tz, expect_tz))
         else:
@@ -71,13 +68,15 @@ def consistency_dimension(facts, expect_tz=None, expect_locale=None):
         locale = (facts or {}).get("lang")
     if expect_locale:
         measured += 1
-        if locale != expect_locale:
+        if locale in (None, "", "unset", "unknown"):
+            measured -= 1
+        elif locale != expect_locale:
             score -= 30
             reasons.append("系统语言是 %s，预期 %s。" % (locale, expect_locale))
         else:
             reasons.append("系统语言与地区一致。")
     ntp = (facts or {}).get("ntp") if isinstance(facts, dict) and "ntp" in (facts or {}) else None
-    if ntp is not None:
+    if ntp in ("yes", "no"):
         measured += 1
         if ntp != "yes":
             score -= 25
@@ -93,30 +92,16 @@ def consistency_dimension(facts, expect_tz=None, expect_locale=None):
 
 
 def leakage_dimension(dns=None, webrtc=None):
-    reasons, score, measured = [], 100, 0
-    nameservers = [n for n in ((dns or {}).get("nameservers") or []) if n]
-    public = [n for n in nameservers if (dns or {}).get("public") and n in dns["public"]]
-    if nameservers:
-        measured += 1
-        if public:
-            score -= 45
-            reasons.append("查地址用的是公共 DNS（%s），和你这条线路不是一回事。" % ", ".join(public))
-        else:
-            reasons.append("查地址走的是本机配置的解析器。")
+    # Resolver addresses describe configuration, not the actual DNS route.
     leak = (webrtc or {}).get("leak")
-    if leak is not None:
-        measured += 1
-        if leak:
-            score -= 55
-            reasons.append("浏览器有一条便道（WebRTC）会暴露本地网络位置。")
-        else:
-            reasons.append("浏览器没有把本地网络位置漏出去。")
-    if measured == 0:
-        return _dim("leakage", "泄漏", WEIGHTS["leakage"], 0, "not_measured",
-                    ["DNS 与浏览器的泄漏项都没有测。"], "先测这两项再判断。")
-    state = "ok" if score >= 80 else ("warn" if score >= 50 else "fail")
-    fix = None if state == "ok" else "让解析和浏览器都只走这一条线路，并关掉 WebRTC 直连。"
-    return _dim("leakage", "泄漏", WEIGHTS["leakage"], max(0, score), state, reasons, fix)
+    if type(leak) is not bool:
+        return _dim("leakage", "WebRTC 路径比较", WEIGHTS["leakage"], 0, "not_measured",
+                    ["没有可比较的 WebRTC 与 HTTPS 出口；DNS 配置地址不能证明解析路径。"], None)
+    return _dim("leakage", "WebRTC 路径比较", WEIGHTS["leakage"], 0 if leak else 100,
+                "fail" if leak else "ok",
+                ["本次 WebRTC 与同地址族 HTTPS 出口不同。" if leak else
+                 "本次可比较的 WebRTC 与 HTTPS 出口一致；未覆盖全部 DNS 或网络流量。"],
+                "核对浏览器和代理的实际路由，再复测。" if leak else None)
 
 
 def reputation_dimension(reputation):
@@ -155,11 +140,6 @@ def stability_dimension(service=None, facts=None):
             reasons.append("重启之后不会自动起来。")
         else:
             reasons.append("关机重启后会自动起来。")
-    if (facts or {}).get("systemd") is not None:
-        measured += 1
-        if facts.get("systemd") != "yes":
-            score -= 20
-            reasons.append("这台服务器没有后台常驻机制。")
     if measured == 0:
         return _dim("stability", "稳定性", WEIGHTS["stability"], 0, "not_measured",
                     ["没有部署服务，也没有读到常驻机制。"], None)

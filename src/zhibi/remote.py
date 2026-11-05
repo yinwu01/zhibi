@@ -134,10 +134,8 @@ def findings(facts):
     add("remote.clock", "ok" if facts.get("ntp") == "yes" else "changed_unverified",
         "系统时钟已同步。" if facts.get("ntp") == "yes" else "时钟未确认同步；时间戳漂移会与出口地区矛盾。")
     nameservers = [n for n in (facts.get("nameservers") or "").split() if n]
-    public = [n for n in nameservers if n in PUBLIC_DNS]
-    add("remote.dns", "fail" if public else "ok",
-        "解析器为公共 DNS，与服务器所在地区可能不一致。" if public else
-        ("解析器取自本机配置。" if nameservers else "未读到解析器配置。"))
+    add("remote.dns", "observed" if nameservers else "not_measured",
+        "已读取解析器配置；此读数不证明 DNS 请求实际路径。" if nameservers else "未读到解析器配置。")
     add("remote.locale", "ok" if facts.get("locales", "0").isdigit() and int(facts.get("locales", "0")) > 1 else "changed_unverified",
         "已生成多个 locale。" if facts.get("locales", "0").isdigit() and int(facts.get("locales", "0")) > 1
         else "可用 locale 很少，语言对齐可能不生效。")
@@ -166,7 +164,7 @@ def align_plan(facts, timezone=None, locale=None, nameserver=None):
         plan.append({"id": "locale",
                      "command": "localedef -i " + locale.split(".")[0] + " -f UTF-8 " + locale,
                      "before": facts.get("lang"), "after": locale,
-                     "effect": "生成并启用目标语言环境",
+                     "effect": "生成目标语言资源；不改变已有登录会话或服务默认语言",
                      "rollback": "保留原值 " + str(facts.get("lang")), "skip_if_present": True})
     if nameserver:
         raise InputError("本项目不代改远端 DNS；请用 resolvconf 或云厂商控制台自行设置，再用 remote verify 复核。")
@@ -183,7 +181,7 @@ Type=simple
 User={user}
 WorkingDirectory={workdir}
 ExecStart={command}
-Restart=always
+Restart=on-failure
 RestartSec={restart}
 LimitNOFILE=65535
 NoNewPrivileges=yes
@@ -205,6 +203,11 @@ def unit(name, command, user="root", workdir=None, restart=10, memory_mb=None, c
         raise InputError("命令不能包含换行或空字符。")
     if len(command) > 4096:
         raise InputError("命令过长。")
+    for label, value in (("工作目录", workdir), ("描述", description)):
+        if value is not None and (not isinstance(value, str) or any(c in value for c in "\n\r\0%")):
+            raise InputError(label + "含无效字符。")
+    if workdir and not workdir.startswith("/"):
+        raise InputError("工作目录必须为绝对路径。")
     limits = ""
     if memory_mb:
         limits += "MemoryMax=" + str(int(memory_mb)) + "M\n"
@@ -223,23 +226,18 @@ def unit(name, command, user="root", workdir=None, restart=10, memory_mb=None, c
 def wrap_plan(item, name, command, user="root", workdir=None, restart=10,
               memory_mb=None, cpu_percent=None, apply=False):
     body = unit(name, command, user, workdir, restart, memory_mb, cpu_percent)
-    encoded = base64.b64encode(body.encode()).decode()
-    path = "/etc/systemd/system/" + name + ".service"
-    steps = [
-        "printf %s " + encoded + " | base64 -d > " + path,
-        "systemctl daemon-reload",
-        "systemctl enable --now " + name,
-        "systemctl is-active " + name,
-    ]
-    plan = {"action": "wrap", "unit": name, "path": path, "unit_content": body,
-            "steps": steps, "applied": False, "command_source": "user"}
+    from .service import deployment
+    transaction = deployment(name, body)
+    plan = {"action": "wrap", "unit": name,
+            "receipt": transaction["receipt"], "rollback": transaction["rollback"],
+            "applied": False, "command_source": "user"}
     if not apply:
         return plan
-    script = "set -e\n" + "\n".join(steps)
-    outcome = execute(item, script, timeout=120)
+    outcome = execute(item, transaction["script"], timeout=120)
     plan["applied"] = outcome["state"] == "ok"
     plan["state"] = outcome["state"]
     plan["checked_at"] = now()
+    plan["notice"] = "启动失败会尝试恢复原服务；连接中断后需检查回执和实际状态。进程启动不代表应用健康。"
     return plan
 
 
@@ -256,9 +254,8 @@ def verify(facts, expect_tz=None, expect_locale=None, unit_name=None, unit_state
     results.append({"key": "clock", "expected": "yes", "measured": facts.get("ntp"),
                     "state": "ok" if facts.get("ntp") == "yes" else "changed_unverified"})
     nameservers = [n for n in (facts.get("nameservers") or "").split() if n]
-    results.append({"key": "dns", "expected": "not public", "measured": nameservers,
-                    "state": "fail" if any(n in PUBLIC_DNS for n in nameservers) else
-                             ("ok" if nameservers else "not_measured")})
+    results.append({"key": "dns", "expected": "实际解析路径需另测", "measured": nameservers,
+                    "state": "observed" if nameservers else "not_measured"})
     if unit_name:
         results.append({"key": "unit", "expected": "active", "measured": unit_state,
                         "state": "ok" if unit_state == "active" else "fail"})

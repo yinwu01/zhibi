@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0a1 — 本地开发预发布，2026-11-05
+
+- 主 Skill 改为扫描优先、按需配置、可选浏览器；安装和界面操作按用户环境安排。
+- 新增 connect、connection-check 和独立连接文件夹，支持本机 SOCKS5、远端命令、交互终端及退出清理。
+- 后台服务备份、失败恢复和部署回执；报告使用实际浏览器数据并保留两端验收。
+- 修正出口归属、公共 DNS 与缺失信息的判读；阶段 --out 保存私人结果。
+- 本地协议集成覆盖 SSH、SOCKS、独立 Chrome、PTY、端口冲突和停止清理。真实 VPS/systemd 与用户浏览器完整验收仍未完成，见 docs/implementation/acceptance-matrix.md。
+- 此版本仅构建在本地，尚未发布到远端。
+
 ## 0.3.0a3 — 主流程收敛，2026-10-20
 
 - README、Skill 和 Tutorial 统一为选择实际环境、主动检查、协助配置、复查交付；computer use 可用时由 Agent 执行浏览器操作。作者前言原文保留。

@@ -32,6 +32,13 @@ def verify():
                                     env=environment, capture_output=True, text=True, encoding="utf-8", timeout=30)
             assert result.returncode == 0, result.stderr
             return json.loads(result.stdout)
+        connection = run("connect", "--host", "example.com")
+        assert connection["browser_proxy"]["host"] == "127.0.0.1"
+        assert connection["applied"] is False
+        exported_connection = run("connect", "--host", "example.com", "--export-out", base / "connection")
+        assert Path(exported_connection["launcher"]).is_file()
+        assert exported_connection["verified"] is False
+        assert (skill / "references/runtime.md").is_file()
         assert run("doctor")["runtime_dependencies"] == []
         assert "scan" in run("capabilities")["commands"]
         assert all(not p["configured"] for p in run("providers")["providers"])
@@ -75,7 +82,7 @@ def verify():
             for link in re.findall(r"\[[^\]]*\]\(([^)]+)\)", content):
                 if "://" not in link and not link.startswith("#"):
                     assert (path.parent / link.split("#")[0]).is_file(), (path.name, link)
-        return {"result": "passed", "scenarios": ["isolated_install", "offline_scan", "provider_catalog", "keyless_reputation_plan", "conflicting_sources",
+        return {"result": "passed", "scenarios": ["isolated_install", "connection_plan", "offline_scan", "provider_catalog", "keyless_reputation_plan", "conflicting_sources",
                 "missing_coverage", "provider_outage", "summary_export", "scoped_ipv6_confirmation", "advanced_browser_v4", "optional_suite", "redacted_suite_share", "dns_offline_and_plan", "third_party_licenses"],
                 "python": sys.version.split()[0], "host_natural_language_selection": "not_tested"}
 

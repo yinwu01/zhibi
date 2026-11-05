@@ -28,6 +28,8 @@ with tempfile.TemporaryDirectory(prefix="zhibi-wheel-") as tmp:
     run([str(python), "-m", "pip", "install", "--no-deps", "--no-index", str(wheel)])
     cap = json.loads(run([str(command), "capabilities"]).stdout)
     assert cap["version"] == __version__
+    connection = json.loads(run([str(command), "connect", "--host", "example.com"]).stdout)
+    assert connection["browser_proxy"]["type"] == "socks5" and not connection["applied"]
     run([str(command), "demo", "--out", str(directory / "demo")])
     run([str(command), "browser", "--out", str(directory / "browser.html")])
     run([str(command), "browser", "--advanced", "--out", str(directory / "advanced.html")])

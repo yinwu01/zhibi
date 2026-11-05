@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zhibi"
-version = "0.3.0a3"
+version = "0.4.0a1"
 description = "Local-first network environment preparation with traceable evidence."
 readme = "README.md"
 requires-python = ">=3.9"

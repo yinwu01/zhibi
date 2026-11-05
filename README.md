@@ -87,6 +87,32 @@ computer use 负责真实界面操作，本地脚本负责测量、查询和报�
 
 涉及验证、付款、权限或超出既有授权的修改时，Agent 留下明确接手点。作者三个账号的详细流程仍待补充；目前提供的是环境检查与配置协助，不冒充已完成的注册教程。
 
+## 检查之后直接使用
+
+当前开发版增加了 VPS 进程与本地浏览器的连接入口。你可以只检查，也可以让 Agent 继续准备运行环境。浏览器品牌由你选择，支持 SOCKS5 的普通浏览器和指纹浏览器均可按相同协议接入，具体品牌需要逐个验证。
+
+主流程：**扫描当前环境 → 询问是否配置 → 准备 VPS 并运行命令 → 配置所选浏览器 → 实际复测与交付。**
+
+- **交互式程序或一次性命令**：`connect` 通过 SSH 执行用户提供的私人脚本，可分配终端，同时提供本机 SOCKS5。
+- **后台服务**：`build` 用 systemd 托管适合后台运行的程序，保存部署原值和服务恢复回执。已有服务替换前备份，启动失败时尝试恢复。
+- **后续自己使用**：`connect --export-out` 生成独立启动文件夹，包含 `start.py`、通用浏览器代理参数与使用说明。需要本机 Python、SSH 和原密钥；不依赖继续打开 Agent 会话。
+- **验证**：`connection-check` 检查指定代理的出口；`session` 测实际浏览器；`accept` 和 `deliver` 保留两端结果。应用的实际操作仍须成功，才能宣布可用。
+
+命令示例（由 Agent 补齐本次参数并执行）：
+
+```bash
+# 仅导出，不连接；该目录包含私人连接信息
+zhibi connect --host HOST --user USER --identity KEY --export-out ./my-connection
+# 运行连接并同时启动远端程序；脚本文件权限须为 600
+zhibi connect --host HOST --user USER --identity KEY --command-file ./start.private.sh --interactive --apply
+# 在连接运行时验证本机 SOCKS 的出口；不回退直连
+zhibi connection-check --local-port 10818 --expected-ip EXPECTED_IP --network
+```
+
+SSH SOCKS 是 TCP 通道，不提供 UDP 转发，DNS 与 WebRTC 要按浏览器能力另行配置并实测。远端进程使用服务器现有路由；本地浏览器与远端进程共用出口，不意味着它们是同一设备。交互连接断开不保证远端进程继续运行；需要持续托管时选择适合的后台模式。
+
+开发验证已覆盖回环真实 SSH/SOCKS 通信、单元回归和独立安装；真实 Linux VPS、systemd 与用户浏览器的完整验收仍待完成。开发进度见 [闭环记录](docs/implementation/closure-status.md)。
+
 ## 为什么从主动风控角度做
 
 每个建议都要说明：**想避免什么问题 → 本次观察到什么 → 证据支持到哪一步 → 做什么 → 如何复查。**

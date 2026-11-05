@@ -9,14 +9,15 @@ BAD_FACTS = {"tz": "UTC", "lc_all": "C", "ntp": "no", "systemd": "yes"}
 
 
 class EgressTests(unittest.TestCase):
-    def test_datacenter_org_is_high_risk_identity(self):
+    def test_datacenter_org_is_background(self):
         dim = s.egress_dimension({"org": "AS14061 DigitalOcean, LLC"})
         self.assertTrue(dim["reasons"])
+        self.assertEqual(dim["state"], "not_measured")
         self.assertEqual(s.looks_datacenter("AS14061 DigitalOcean, LLC"), True)
 
     def test_residential_org_is_not_flagged(self):
         self.assertFalse(s.looks_datacenter("China Telecom Broadband"))
-        self.assertEqual(s.egress_dimension({"org": "China Telecom Broadband"})["state"], "ok")
+        self.assertEqual(s.egress_dimension({"org": "China Telecom Broadband"})["state"], "not_measured")
 
     def test_unknown_org_is_not_measured_not_pass(self):
         dim = s.egress_dimension({})
@@ -36,7 +37,7 @@ class DimensionTests(unittest.TestCase):
 
     def test_dns_leak_alone_lowers_leakage(self):
         dim = s.leakage_dimension({"nameservers": ["8.8.8.8"], "public": {"8.8.8.8"}})
-        self.assertEqual(dim["state"], "warn")
+        self.assertEqual(dim["state"], "not_measured")
         self.assertLess(dim["score"], 80)
 
     def test_webrtc_leak_is_worst_case(self):
@@ -51,6 +52,17 @@ class DimensionTests(unittest.TestCase):
     def test_reputation_optional_stays_unmeasured(self):
         self.assertEqual(s.reputation_dimension({})["state"], "not_measured")
         self.assertEqual(s.reputation_dimension({"score": 92})["state"], "ok")
+
+    def test_unknown_provider_never_becomes_residential(self):
+        dim = s.egress_dimension({"org": "Unrecognized Organization"})
+        self.assertEqual(dim["state"], "not_measured")
+        self.assertIn("未知类型", dim["reasons"][0])
+
+    def test_systemd_available_is_not_running_service(self):
+        self.assertEqual(s.stability_dimension(facts={"systemd": "yes"})["state"], "not_measured")
+
+    def test_missing_values_are_not_mismatches(self):
+        self.assertEqual(s.consistency_dimension({}, "Europe/Berlin", "en_US.UTF-8")["state"], "not_measured")
 
     def test_stability_requires_service_evidence(self):
         self.assertEqual(s.stability_dimension()["state"], "not_measured")
@@ -76,7 +88,7 @@ class AggregateTests(unittest.TestCase):
                          webrtc={"leak": True}, service={"active": False, "enabled": False})
         self.assertEqual(result["level"], "high")
         ids = {item["id"] for item in result["high_risk"]}
-        self.assertTrue({"egress", "consistency", "leakage"} <= ids)
+        self.assertTrue({"consistency", "leakage"} <= ids)
 
     def test_missing_evidence_never_becomes_low(self):
         result = s.score()
@@ -86,7 +98,7 @@ class AggregateTests(unittest.TestCase):
 
     def test_coverage_reflects_measured_weight(self):
         result = s.score(facts=GOOD_FACTS, expect_tz="Europe/Berlin")
-        self.assertEqual(result["coverage"], 35)
+        self.assertEqual(result["coverage"], 25)
         self.assertIn("not_measured", {d["state"] for d in result["dimensions"]})
 
     def test_score_always_carries_its_limits(self):

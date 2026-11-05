@@ -63,7 +63,7 @@ def save_run(report, snapshot, destination=None):
     emit({"directory": str(directory), "report": str(directory / "report.html"), "summary": summary})
 
 
-VISIBLE = {"check", "build", "browse", "accept", "deliver", "doctor"}
+VISIBLE = {"session", "scan", "check", "connect", "connection-check", "build", "browse", "accept", "deliver", "doctor"}
 
 
 def _minimal_help(parser):
@@ -187,6 +187,8 @@ def main(argv=None):
     adspower.register(sub)
     from . import remote
     remote.register(sub)
+    from . import connect
+    connect.register(sub)
     from . import flow
     flow.register(sub)
     from . import delivery
@@ -208,6 +210,14 @@ def main(argv=None):
             emit(delivery.install(args.archive, args.sha256, args.dest, args.replace))
         elif args.command == "skill-rollback":
             emit(delivery.rollback(args.dest, args.previous))
+        elif args.command == "connect":
+            result = connect.run(args)
+            emit(result)
+            return result.get("exit_status", 0)
+        elif args.command == "connection-check":
+            result = connect.verify_route(args)
+            emit(result)
+            return 0 if result.get("status") in (None, "ok") else 1
         elif args.command in flow.STEPS:
             emit(flow.dispatch(args))
         elif args.command == "remote":
