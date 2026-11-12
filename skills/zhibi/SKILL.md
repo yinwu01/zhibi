@@ -31,6 +31,8 @@ description: Inspect the user's actual browser and VPS network, optionally prepa
 
 需要专用进程环境时，按 runtime 参考使用 `process-workspace` 与 `process-entry`。需要受控代理联网时选择 proxy 模式，核验固定版本 graftcp 和解析器可达性；长期运行用 `runtime-service` 交付用户级网关服务及恢复入口。不要把默认完全隔离模式交付成可联网环境，也不要把 host 模式描述成代理专用网络。
 
+需要按项目保存连接、再次启动或恢复应用会话时，阅读 [projects](references/projects.md)。`project bind/start/resume/status` 复用现有远程环境；`project upload/download` 处理选定的单个文件或图片。绑定不等于完成部署，应用会话恢复与后台常驻分别验证。
+
 ## 4. 浏览器
 
 阅读 [browser](references/browser.md)。用户可以自行配置或委托 Agent。API、computer use 或手动均可；以实际浏览器版本和官方说明选择方式。配置目标固定，点击步骤灵活。

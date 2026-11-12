@@ -390,8 +390,11 @@ class SessionFallbackTests(unittest.TestCase):
             thread=threading.Thread(target=server.serve_forever,daemon=True); thread.start()
             base='http://127.0.0.1:'+str(server.server_port)
             try:
+                # This tests the loopback receiver, not a host HTTP proxy that may
+                # rewrite Host. Never send this private request through a proxy.
+                opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
                 for path,headers in (('/token',{'Host':'evil.example'}),('/report.html',{}),('/browser.private.json',{})):
                     with self.assertRaises(urllib.error.HTTPError):
-                        urllib.request.urlopen(urllib.request.Request(base+path,headers=headers))
+                        opener.open(urllib.request.Request(base+path,headers=headers), timeout=5)
                 self.assertFalse(state.get('received'))
             finally: server.shutdown();server.server_close();thread.join()

@@ -15,6 +15,7 @@ import threading
 import time
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 import paramiko
 from zhibi.connect import argv
 from zhibi.connection_bundle import export
@@ -238,8 +239,31 @@ with tempfile.TemporaryDirectory(prefix="zhibi-ssh-") as tmp:
             assert result.returncode != 0, "occupied port incorrectly succeeded"
         finally:
             occupied.close()
+        # Project binding survives an independent load; both directory preflight
+        # and the saved application command travel over real OpenSSH.
+        from zhibi import project, remote
+        checkout = root / "project 中文"
+        checkout.mkdir()
+        marker = checkout / "application-result"
+        import shlex
+        script.write_text("printf project-ok > " + shlex.quote(str(marker)) + "; exit 9\n")
+        bound = SimpleNamespace(action="bind", project=str(checkout), state_dir=str(root / "bindings"),
+            host="127.0.0.1", user="tester", port=ssh_listener.getsockname()[1], identity=str(key),
+            local_port=local_port, workdir=str(checkout), command_file=str(script), resume_file=None,
+            interactive=False, apply=True)
+        project.run(bound)
+        original_ssh = remote.ssh_argv
+        def pinned_ssh(item, text):
+            result = original_ssh(item, text)
+            result[1:1] = ["-o", "UserKnownHostsFile=" + str(known), "-o", "StrictHostKeyChecking=yes", "-o", "IdentitiesOnly=yes"]
+            return result
+        bound.action = "start"
+        with patch("zhibi.remote.ssh_argv", side_effect=pinned_ssh):
+            launched = project.run(bound)
+        assert launched["exit_status"] == 9, launched
+        assert marker.read_text() == "project-ok"
         assert not errors, errors
-        print(json.dumps({"ssh_auth": "passed", "socks_http": "passed", "remote_command": "passed", "remote_pty": "passed", "port_conflict": "passed", "exit_status": "passed", "standalone_launcher": "passed", "parent_termination_closes_proxy": "passed", "chromium_socks_navigation": browser_state, "scope": "loopback protocol test; not user browser or Linux VPS acceptance"}))
+        print(json.dumps({"project_binding_launch": "passed", "ssh_auth": "passed", "socks_http": "passed", "remote_command": "passed", "remote_pty": "passed", "port_conflict": "passed", "exit_status": "passed", "standalone_launcher": "passed", "parent_termination_closes_proxy": "passed", "chromium_socks_navigation": browser_state, "scope": "loopback protocol test; not user browser or Linux VPS acceptance"}))
     finally:
         if tunnel.poll() is None:
             tunnel.terminate()

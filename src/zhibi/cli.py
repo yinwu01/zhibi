@@ -63,7 +63,7 @@ def save_run(report, snapshot, destination=None):
     emit({"directory": str(directory), "report": str(directory / "report.html"), "summary": summary})
 
 
-VISIBLE = {"session", "scan", "check", "connect", "connection-check", "browser-workspace", "process-workspace", "process-entry", "proxy-gateway", "runtime-service", "build", "browse", "accept", "deliver", "doctor"}
+VISIBLE = {"project", "session", "scan", "check", "connect", "connection-check", "browser-workspace", "process-workspace", "process-entry", "proxy-gateway", "runtime-service", "build", "browse", "accept", "deliver", "doctor"}
 
 
 def _minimal_help(parser):
@@ -213,6 +213,8 @@ def main(argv=None):
     browser_workspace.register(sub)
     from . import connect
     connect.register(sub)
+    from . import project
+    project.register(sub)
     from . import flow
     flow.register(sub)
     from . import delivery
@@ -250,6 +252,10 @@ def main(argv=None):
                          args.graftcp, args.graftcp_sha256, args.proxy_socket, args.dns_server))
         elif args.command == "browser-workspace":
             emit(browser_workspace.create(args))
+        elif args.command == "project":
+            result = project.run(args)
+            emit(result)
+            return result.get("exit_status", 0)
         elif args.command == "connect":
             result = connect.run(args)
             emit(result)
