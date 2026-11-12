@@ -51,6 +51,18 @@ class ConnectTests(unittest.TestCase):
         with self.assertRaises(InputError):
             connect.argv(options(local_port=0))
 
+    def test_explicit_private_ssh_config_is_used_for_proxy_connections(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            config = Path(tmp) / "ssh.config"
+            config.write_text("Host example.com\n  ProxyJump jump.example.com\n")
+            config.chmod(0o600)
+            command = connect.argv(options(ssh_config=str(config)))
+            self.assertEqual(command[command.index("-F") + 1], str(config))
+            if os.name == "posix":
+                config.chmod(0o644)
+                with self.assertRaises(InputError):
+                    connect.argv(options(ssh_config=str(config)))
+
 
 class RouteCheckTests(unittest.TestCase):
     def test_network_opt_in(self):

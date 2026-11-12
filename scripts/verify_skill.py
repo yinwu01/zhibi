@@ -39,6 +39,14 @@ def verify():
         assert Path(exported_connection["launcher"]).is_file()
         assert exported_connection["verified"] is False
         assert (skill / "references/runtime.md").is_file()
+        assert (skill / "references/local-vm.md").is_file()
+        assert (skill / "references/audit.md").is_file()
+        project_dir = base / "project"; project_dir.mkdir()
+        start_script = base / "start.sh"; start_script.write_text("true\n"); start_script.chmod(0o600)
+        common = ["--project", project_dir, "--state-dir", base / "bindings"]
+        run("project", "bind", *common, "--host", "example.com", "--workdir", "/srv/project", "--command-file", start_script)
+        assert run("project", "status", *common)["backend"] == "remote"
+        assert not run("project", "audit", *common)["attempted"]
         assert run("doctor")["runtime_dependencies"] == []
         assert "scan" in run("capabilities")["commands"]
         assert all(not p["configured"] for p in run("providers")["providers"])

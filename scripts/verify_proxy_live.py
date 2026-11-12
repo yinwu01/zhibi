@@ -46,7 +46,16 @@ def main():
                 gateway.shutdown(); gateway.server_close(); thread.join(timeout=5)
                 failure = subprocess.run(argv, capture_output=True, text=True, timeout=30)
                 assert failure.returncode != 0, 'gateway stopped but application still reached destination'
-                print(json.dumps({'https': observed, 'gateway_off_fails': True}))
+                with Gateway(root / 'proxy.sock') as restored:
+                    recovery_thread = threading.Thread(target=restored.serve_forever, daemon=True)
+                    recovery_thread.start()
+                    try:
+                        recovery = subprocess.run(argv, capture_output=True, text=True, timeout=30)
+                        assert recovery.returncode == 0, (recovery.returncode, recovery.stderr)
+                        assert json.loads(recovery.stdout)['status'] == 200
+                    finally:
+                        restored.shutdown(); recovery_thread.join(timeout=5)
+                print(json.dumps({'https': observed, 'gateway_off_fails': True, 'gateway_restoration_succeeds': True}))
             finally:
                 gateway.shutdown(); thread.join(timeout=5)
 

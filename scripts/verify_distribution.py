@@ -30,6 +30,15 @@ with tempfile.TemporaryDirectory(prefix="zhibi-wheel-") as tmp:
     assert cap["version"] == __version__
     connection = json.loads(run([str(command), "connect", "--host", "example.com"]).stdout)
     assert connection["browser_proxy"]["type"] == "socks5" and not connection["applied"]
+    project_dir = directory / "project"; project_dir.mkdir()
+    start_script = directory / "start.sh"; start_script.write_text("true\n"); start_script.chmod(0o600)
+    common = ["--project", str(project_dir), "--state-dir", str(directory / "bindings")]
+    run([str(command), "project", "bind", *common, "--host", "example.com", "--workdir", "/srv/project", "--command-file", str(start_script)])
+    status = json.loads(run([str(command), "project", "status", *common]).stdout)
+    assert status["backend"] == "remote" and not status["live_checked"]
+    audit = json.loads(run([str(command), "project", "audit", *common]).stdout)
+    assert not audit["attempted"] and not audit["complete"]
+    run([str(command), "vm", "--help"])
     process = json.loads(run([str(command), "process-workspace", "--workdir", str(directory),
                               "--out", str(directory / "process")]).stdout)
     assert Path(process["runner"]).is_file()

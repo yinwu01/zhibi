@@ -1,45 +1,35 @@
-# Zhibi · Let your agent prepare your network environment
+# Zhibi · Let your agent inspect and align your environment
 
-**Turn scattered setup advice into actions your agent can carry out.**
+Zhibi is an Agent Skill with local tools. It inspects the browser and network you actually use, prepares a dedicated Linux application environment when requested, and records what was verified.
 
-Zhibi is a local Skill for checking the environment you actually use for the application. With a computer-use capable agent, it can open that browser, run checks, inspect relevant settings, carry out authorized changes and recheck the result.
+**Scan → Choose runtime and exit → Prepare the application → Configure the browser → Verify and hand over.**
 
-**Scan → Ask whether configuration is needed → Prepare the VPS and application → Configure the selected browser → Verify and hand over.** No provider keys are needed for the default flow.
+[简体中文](README.md) · [Get started](#get-started) · [Implementation status](docs/implementation/two-route-plan.md)
 
-[Get started](#get-started) · [简体中文](README.md)
+## Two runtime routes
 
-The full workflow provides two coordinated environments: a dedicated Linux application workspace on your VPS, and a separate local browser profile using that VPS's network path. Configure the chosen timezone and languages, keep the visible settings consistent, and reduce exposure from unrelated local accounts, extensions and permissions.
+| Route | Application runtime | Files and browser |
+| --- | --- | --- |
+| Preferred: your Linux server | A dedicated remote workspace, optionally isolated with bubblewrap and supervised by systemd | Remote editing or explicit file transfer; a local browser can use the VPS through SSH SOCKS |
+| Alternative: a local Linux VM | PVM creates a Linux VM on your computer | The selected project is shared at `/workspace`; a browser can run in the same VM desktop |
 
-**A Linux VPS you are authorized to manage is required for the full workflow.** Residential or datacenter connectivity can be used; a mass-shared proxy subscription is not a substitute for the server or a dedicated, traceable exit. Local checks can run before you have a VPS.
+Runtime location and network exit are separate choices. A local VM does not automatically provide a dedicated regional exit. Configure a separately registered VPS exit, or explicitly choose `direct` to use the host's network. WARP is an upstream option, not an equivalent promise of a dedicated regional VPS.
 
-## Application workspace and persistent service
+The remote route requires a Linux server you control. Residential or datacenter connectivity can be used; a mass-shared proxy subscription does not replace a server or a dedicated, traceable exit. Checks alone do not require a VPS.
 
-`process-workspace` creates a separate HOME, environment and filesystem view with bubblewrap. `process-entry` creates a normal command entry outside the application's installation directory, so replacing the application at the same path retains the wrapper. Proxy mode uses a pinned graftcp binary and a private Unix SOCKS5 endpoint inside a network namespace without an external route.
+## What you receive
 
-`proxy-gateway` supplies that endpoint using the server's existing TCP egress. `runtime-service` exports a standalone systemd user-service manager, optionally supervising a background application together with the gateway. Install, status and rollback commands are included; existing services are not overwritten. Interactive applications use the command entry rather than a background service.
+- A dedicated application environment and a corresponding browser setup.
+- Private project bindings with start and optional application-specific resume commands.
+- Explicit uploads/downloads for the remote route, or a shared project for local VMs.
+- Exit observations, protocol checks, browser comparisons and unmeasured items.
+- Instructions to stop, restore and remove the configuration you created.
 
-Linux checks cover command replacement, child processes, DNS, TCP, direct UDP blocking, real HTTPS, gateway failure, systemd restart and rollback. Final application operations and the selected fingerprint browser still require their own acceptance checks. See [runtime implementation and evidence](docs/implementation/process-wrapper.md).
-
-<details>
-<summary>Why I built this: a personal note</summary>
-
-## A personal note
-
-Switching machines, network exits and browser profiles can leave settings out of sync. Zhibi grew out of my experience studying risk controls for international applications and using paid services across different environments. The practical aim is to inspect those settings, prepare a dedicated environment, and verify the resulting network path.
-
-The project combines three parts:
-
-1. Local environment checks and reports, with explicit network queries when needed.
-2. An Agent Skill that interprets observations and carries out configuration steps.
-3. A dedicated VPS application workspace and browser connection, with reusable startup, shutdown and recovery instructions.
-
-</details>
+A smaller environment helps align the chosen timezone, language and network path while limiting exposure of unrelated home directories, settings, extensions and permissions. Chromium workspaces generated by Zhibi use a separate profile and restrict selected permissions, extensions and sync. Other browsers need their own supported API or UI configuration and verification.
 
 ## Get started
 
-You need Python 3.9+ and a local agent. Computer use must already be available in your host; installing this Skill does not grant that capability. Without it, the agent can still run diagnostics and ask you to complete the specific browser step.
-
-The public source can be installed now:
+Use Python 3.9+, an SSH client and an Agent host such as Codex. Computer use is helpful for browser settings; supported APIs and manual steps can also be used.
 
 ```bash
 git clone https://github.com/yinwu01/zhibi.git
@@ -47,57 +37,63 @@ cd zhibi
 python3 scripts/install_skill.py --host codex
 ```
 
-The installer builds the complete Skill and refuses to overwrite an existing installation. Other hosts can use `--dest /path/to/skills/zhibi`. The v0.4.0a1 release is currently a draft; use source installation for now.
+Ask the agent:
 
-Start a fresh session, invoke `$zhibi` or `/zhibi`, and say:
+> Use Zhibi to inspect my actual browser and network. Prefer my Linux server when preparing an application environment. If I do not have one, evaluate a local VM. Adapt installation to my setup, then save the launch instructions and verification results.
 
-> Check the AdsPower profile I use for the application with Zhibi. You may use the default no-key services. Operate the browser, inspect relevant settings, explain any proposed changes, apply changes within my authorization, recheck, and open the report.
+Local VMs additionally need separately installed PVM v1.1.6, its QEMU runtime, and sufficient memory and disk. The current adapter accepts macOS arm64 and Linux amd64; Windows support in upstream PVM is not yet integrated here. First-time image construction takes additional time.
 
-No pip installation, provider registration or manual JSON copying is needed. If the browser cannot reach the local receiver, the agent can use the file-based session instead.
+## Daily use
 
-[Installation and first-run tutorial](docs/archive/tutorials/skill.md)
-
-## What you receive
-
-A local report showing the main conclusion, the agent's next action, and a short **Check | Result | Advice** table. Technical evidence and optional results stay collapsed. A failed measurement never becomes a zero score or a pass.
-
-The Skill has two modes:
-
-- **Detect:** measure the actual environment, query no-key intelligence and explain actionable findings.
-- **Assist:** follow the user's task or supplied procedure, inspect settings with computer use or supported local tools, perform authorized changes, retain recovery evidence and recheck the same environment.
-
-The default checks cover the actual exit, available IP labels/history, and the dedicated environment's IPv6 policy. Extra checks are selected for a specific question. Account verification, payment and unavailable permissions remain explicit handoffs.
-
-## Optional tools remain available
-
-Extra providers, browser rendering observations, DNS/TLS, blocklists, connectivity diagnostics, maintenance and recovery tools remain opt-in. See the [catalog](docs/architecture/capability-coverage.md), [optional modules](docs/archive/tutorials/optional-modules.md), [provider setup](docs/archive/tutorials/providers.md) and [maintenance guide](docs/archive/tutorials/environment-maintenance.md). The catalog is a reference, not an onboarding checklist.
+Once the agent has bound your project:
 
 ```bash
-# Actual-browser default flow; add --file if this profile cannot reach loopback.
-python3 ~/.agents/skills/zhibi/scripts/zhibi.py session --preset basic --network
+zhibi project status
+zhibi project start --apply
+# Only when the application supports it and a resume script was configured
+zhibi project resume --apply
 ```
 
-The standalone [start.html](start.html) remains a manual fallback.
+Skill-only users replace `zhibi` with `python3 ~/.agents/skills/zhibi/scripts/zhibi.py`. To install the standalone CLI from the checkout, use `python3 -m pip install .`.
 
-## Evidence and privacy
+Remote transfers require existing parent directories and never overwrite destination files:
 
-Each recommendation connects a concrete concern to an observation, its limits, an action and a recheck. Provider scores are not account-enforcement probabilities. Language, timezone and fonts alone do not produce a risk verdict.
+```bash
+zhibi project upload --local ./image.png --remote-file uploads/image.png --apply
+zhibi project download --remote-file reports/result.txt --local ./result.txt --apply
+```
 
-Reports and private observations stay local. Network measurements and IP lookups reveal the request or queried IP to the selected services; local processing does not mean offline. Application cookies and credentials are not collected. [Privacy](docs/reference/privacy.md) · [Upstream reuse](docs/research/upstream-reuse.md)
+Local VM controls:
 
-Public development prerelease; source installation is available now. Release archives will be published separately. [Workflow validation](docs/implementation/acceptance-matrix.md)
+```bash
+zhibi vm status --workspace VM_WORKSPACE --live
+zhibi vm desktop --workspace VM_WORKSPACE --apply
+zhibi vm stop --workspace VM_WORKSPACE --apply
+```
 
-[MIT](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md) · Independent community project; not affiliated with application vendors. No account outcome is guaranteed.
+Application login and history persist in the runtime environment. Session restoration uses the application's own protocol; it is not background process supervision. Use the remote `runtime-service` workflow for persistent services. Local VM tasks stop when the host is shut down.
+
+## Verification and privacy
+
+`project audit` measures the selected execution environment, compares an imported browser observation and can run a controlled disconnect/reconnect drill. Remote sandbox probes need an explicit runner prefix; otherwise the report identifies the server host as the measurement context. PVM protocol results are included for the local route.
+
+Missing observations remain unmeasured. A successful DNS lookup does not prove its route, and losing SSH access does not prove that application traffic was blocked. A single HTTPS outage test does not cover every protocol. See the [current implementation and acceptance record](docs/implementation/two-route-plan.md) for the distinction between implementation, development tests and deployment verification.
+
+Reports and private configuration are processed locally. Network probes and optional IP-information lookups still contact their stated services, which can see the request IP or queried IP. Zhibi does not collect browser cookies or account credentials. [Data flow](docs/reference/privacy.md).
+
+[Project workflow](skills/zhibi/references/projects.md) · [Local VM setup](skills/zhibi/references/local-vm.md) · [Acceptance procedure](skills/zhibi/references/audit.md) · [MIT](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)
 
 ## Acknowledgments
 
-Thanks to the authors and contributors of these projects:
+Thanks to the authors and contributors of:
 
-- [xiaoxiaodong-vps](https://github.com/nevertoday/xiaoxiaodong-vps): VPS deployment blueprints, Agent Skill organization and operational workflows.
-- [CCBaga](https://github.com/liseami/CCBaga): network and environment workflows, and adapted browser-egress detection code.
-- [CheckCC](https://github.com/yacuo/check-cc): adapted browser observations, font probes and research comparison models.
-- [IPQuality](https://github.com/xykt/IPQuality): research and capability comparison for IP quality checks.
-- [bubblewrap](https://github.com/containers/bubblewrap): the Linux process isolation tool used by application workspaces.
-- [graftcp](https://github.com/hmgle/graftcp): proxy connectivity for applications and their child processes.
+- [xiaoxiaodong-vps](https://github.com/nevertoday/xiaoxiaodong-vps): VPS deployment, Agent Skill and operations workflow references.
+- [CCBaga](https://github.com/liseami/CCBaga): network workflows and adapted browser exit measurements.
+- [CheckCC](https://github.com/yacuo/check-cc): adapted browser observations, font probes and research models.
+- [IPQuality](https://github.com/xykt/IPQuality): IP-quality research and comparison.
+- [Blackhole](https://github.com/tommy0103/blackhole): project binding, persistent state and launch experience references.
+- [PVM](https://github.com/huangzheng2016/pvm): an optional external backend for Linux VMs, shared files, desktops and exits.
+- [bubblewrap](https://github.com/containers/bubblewrap): Linux process isolation.
+- [graftcp](https://github.com/hmgle/graftcp): proxy access for applications and their subprocesses.
 
-See the [upstream reuse record](docs/research/upstream-reuse.md) for versions and modifications, and [third-party notices](THIRD_PARTY_NOTICES.md) for attribution and licensing.
+Zhibi does not bundle PVM, QEMU or application binaries. Versions, incorporation boundaries and licenses are recorded in [upstream reuse](docs/research/upstream-reuse.md) and the [third-party notices](THIRD_PARTY_NOTICES.md).

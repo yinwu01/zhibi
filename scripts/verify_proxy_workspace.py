@@ -124,6 +124,15 @@ print(json.dumps({'tcp': True, 'dns': True, 'child': True, 'caps_dropped': True,
             failed = subprocess.run(argv, capture_output=True, text=True, timeout=20)
             assert failed.returncode != 0, 'proxy stopped but networking still succeeded'
             observations['proxy_off_fails'] = True
+            endpoint.unlink()
+            server = Server(str(endpoint), Socks)
+            server.destinations = []; server.errors = []
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            recovered = subprocess.run(argv, capture_output=True, text=True, timeout=40)
+            assert recovered.returncode == 0, (recovered.returncode, recovered.stderr)
+            assert not server.errors, server.errors
+            observations['proxy_restoration_succeeds'] = True
             print(json.dumps(observations))
         finally:
             server.shutdown(); server.server_close(); thread.join(timeout=5)

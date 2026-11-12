@@ -3,7 +3,7 @@ import signal
 import subprocess
 
 
-def foreground(command):
+def foreground(command, env=None):
     previous = {}
     status = 130
     child = None
@@ -18,7 +18,7 @@ def foreground(command):
         if number is not None:
             previous[number] = signal.signal(number, interrupt)
     try:
-        child = subprocess.Popen(command)
+        child = subprocess.Popen(command, **({"env": env} if env is not None else {}))
         return child.wait()
     except KeyboardInterrupt:
         return status

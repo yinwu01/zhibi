@@ -10,6 +10,7 @@ from zhibi import project
 from zhibi.models import InputError
 
 
+@unittest.skipUnless(os.name == "posix", "POSIX private-file and shell fixture")
 class ProjectTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

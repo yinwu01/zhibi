@@ -22,7 +22,7 @@ def command_text(path):
 
 
 def argv(args):
-    item = remote.target(args.host, args.user, args.port, args.identity)
+    item = remote.target(args.host, args.user, args.port, args.identity, getattr(args, "ssh_config", None))
     if not 1024 <= args.local_port <= 65535:
         raise InputError("本机端口需在 1024–65535。")
     # Reuse the SSH identity rules; no shell is involved on the local machine.
@@ -90,6 +90,7 @@ def register(sub):
     p.add_argument("--user", default="root")
     p.add_argument("--port", type=int, default=22)
     p.add_argument("--identity")
+    p.add_argument("--ssh-config", help="显式私人 SSH 配置，可配置 ProxyJump/ProxyCommand；默认不读用户配置")
     p.add_argument("--local-port", type=int, default=10818)
     p.add_argument("--command-file", help="本机私人脚本文件；在远端用 sh 执行，不打印内容")
     p.add_argument("--workdir", help="远端绝对工作目录")

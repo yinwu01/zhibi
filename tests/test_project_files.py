@@ -1,5 +1,6 @@
 """Exercise actual guest transfer code with a local shell transport."""
 import tempfile
+import os
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -9,6 +10,7 @@ from zhibi.project_files import transfer
 from zhibi.models import InputError
 
 
+@unittest.skipUnless(os.name == "posix", "local POSIX transport fixture")
 class TransferTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

@@ -51,7 +51,7 @@ def _check(pattern, value, message):
     return value
 
 
-def target(host, user="root", port=22, identity=None):
+def target(host, user="root", port=22, identity=None, ssh_config=None):
     """Connect parameters. Values are validated, never interpolated into a shell."""
     item = {
         "host": _check(HOST, host, "服务器地址无效。"),
@@ -68,6 +68,13 @@ def target(host, user="root", port=22, identity=None):
         if os.name == "posix" and (os.stat(path).st_mode & 0o077):
             raise InputError("身份文件权限过宽，请先改为 600。")
         item["identity"] = path
+    if ssh_config:
+        path = os.path.abspath(os.path.expanduser(str(ssh_config)))
+        if os.path.islink(path) or not os.path.isfile(path):
+            raise InputError("显式 SSH 配置必须是普通文件。")
+        if os.name == "posix" and (os.stat(path).st_mode & 0o077 or os.stat(path).st_uid != os.getuid()):
+            raise InputError("显式 SSH 配置必须由当前用户拥有，权限为 600。")
+        item["ssh_config"] = path
     return item
 
 
@@ -75,7 +82,7 @@ def ssh_argv(item, script):
     ssh = shutil.which("ssh")
     if not ssh:
         raise InputError("找不到 ssh 客户端。")
-    argv = [ssh, "-F", "NUL" if os.name == "nt" else "/dev/null",
+    argv = [ssh, "-F", item.get("ssh_config") or ("NUL" if os.name == "nt" else "/dev/null"),
             "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new",
             "-o", "ConnectTimeout=10", "-p", str(item["port"])]
     if item["identity"]:

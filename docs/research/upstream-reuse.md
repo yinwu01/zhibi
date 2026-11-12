@@ -97,3 +97,12 @@ CheckCC 的 `scoring.ts` 按地区画像对国家、时区、语言、locale、�
 CheckCC 六特征地区模型和十个客户端加权信号已移植到 `checkcc_model.py`，保留固定提交、MIT 与输入缺失状态。CCBaga 新提交 `bdfb90c` 的系统/CLI/身份/网络交付逻辑已逐项审查：本轮的维护、工作目录备份、AdsPower API、Mihomo/SSH 交付为独立实现，并未复制其 root Debian 部署脚本。IPQuality 仅用于能力对照，未并入 AGPL 源码。
 
 当前接入方式、可选依赖和仍未完成的子项见[覆盖表](../architecture/capability-coverage.md)，真实运行与夹具测试分别记录在[验收记录](full-coverage-validation.md)。所有对外服务有自己的服务条款；源码 MIT 不等于取得商业数据使用权。
+
+## 双路线运行环境参考（2026-11-12）
+
+| 项目 | 固定版本 | 接入边界 |
+| --- | --- | --- |
+| Blackhole | `49e27ed949384b69b07c1bb52c43ce5cd3e145ba`，MIT | 借鉴项目绑定、持久化与启动体验，未复制代码或镜像 |
+| PVM | v1.1.6 / `edebd3cfbf266f7c5a8bbf86907b6f5d19140b6c` | 独立 CLI 适配层；调用已安装的程序，未复制源码、镜像或二进制。所读源码未包含 LICENSE，不将其标为 MIT |
+
+PVM 的 `audit` 对 warn/skipped 也可能返回 0；知彼逐项解析并保留缺测状态。创建时先 `--no-start`，启动空白 VM 建立网关后配置实例级出口，再挂载项目并运行用户应用，不修改集群默认出口。版本接口需要更新时先验证命令、输出和实际 VM 行为，再调整固定版本。完整状态见[双路线实施记录](../implementation/two-route-plan.md)。

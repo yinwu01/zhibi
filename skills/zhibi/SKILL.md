@@ -1,11 +1,11 @@
 ---
 name: zhibi
-description: Inspect the user's actual browser and VPS network, optionally prepare a Linux process and a local browser connection, then verify and deliver the working environment. Use for network checks, VPS process hosting, browser proxy setup, and rechecks.
+description: Inspect the user's browser and network, prepare a remote Linux workspace or a local PVM Linux VM, bind project launch and file workflows, and verify the selected application and browser paths. Use for network checks, Linux application hosting, browser setup, and rechecks.
 ---
 
 # 知彼
 
-用用户能理解的话解释现状、需要的操作和验证结果。主线是：扫描与判断 → 询问配置需求 → VPS 服务和进程 → 本地浏览器 → 总体验收。仅检查也是完整任务，不要求用户先提供 VPS 或命令。
+用用户能理解的话解释现状、需要的操作和验证结果。主线是：扫描与判断 → 确认运行位置与出口 → 准备 Linux 环境和应用 → 所选浏览器 → 总体验收。优先远程 Linux 服务器；没有远程运行服务器时可提供本地 PVM VM。仅检查也是完整任务，不要求用户先提供 VPS 或命令。
 
 脚本入口为本 Skill 下的 `scripts/zhibi.py`。由 Agent 运行命令；安装依赖和界面操作根据宿主、系统及用户现状安排。已有授权继续有效，缺什么问什么。
 
@@ -19,11 +19,13 @@ description: Inspect the user's actual browser and VPS network, optionally prepa
 
 ## 2. 询问配置需求
 
-用户仅要求检查时先交付结果。需要配置时补齐 VPS 登录方式、用户提供的启动命令，以及是否使用指纹浏览器。允许已有普通浏览器、任意支持代理的指纹浏览器或只使用远端进程。不要默认品牌。
+用户仅要求检查时先交付结果。需要配置时分开确认运行环境与网络出口：有 Linux 服务器则优先远程路线；没有则按 [local-vm](references/local-vm.md) 检查本机资源并准备 PVM。VM 不自动提供地区出口。补齐用户启动命令和浏览器选择，不默认品牌；仅进程、普通浏览器或指纹浏览器均可。
 
 按 [intake](references/intake.md) 收集信息，检查现有软件、服务和端口，给出具体修改计划。用户已授权的步骤直接继续；新增范围才补问。不购买资源、不代替用户登录账号。
 
 ## 3. VPS 服务与进程
+
+本节用于远程路线。本地路线按 local-vm 参考创建共享项目与桌面，并使用相同的 project 启动/恢复入口；不要把整个远程部署流程重复套在本地 VM 上。
 
 阅读 [runtime](references/runtime.md) 和 [remote](references/remote.md)。根据命令的真实运行方式选择交互终端、一次性执行或后台服务。准备依赖时根据实际 Linux 发行版、安装渠道和权限安排，安装后验证可执行文件和版本。不要改变用户命令的用途。
 
@@ -35,11 +37,13 @@ description: Inspect the user's actual browser and VPS network, optionally prepa
 
 ## 4. 浏览器
 
-阅读 [browser](references/browser.md)。用户可以自行配置或委托 Agent。API、computer use 或手动均可；以实际浏览器版本和官方说明选择方式。配置目标固定，点击步骤灵活。
+阅读 [browser](references/browser.md)。用户可以自行配置或委托 Agent。API、computer use 或手动均可；以实际浏览器版本和官方说明选择方式。本地 VM 路线可在同一 VM 桌面内运行浏览器；确认 Linux 浏览器已安装且实际出口正确。配置目标固定，点击步骤灵活。
 
 ## 5. 总体验收与交付
 
-在隧道实际运行时，从指定浏览器重新采集，测出口和所选 DNS/WebRTC 项。用 `accept --host HOST --egress --browser FILE` 比对；只有用户确实选择了时区/语言目标才传对应参数。`deliver` 同样接收 `--browser`，将两端结果保存到本机。
+两条路线共同按 [audit](references/audit.md) 执行项目上下文测量、实际浏览器对比、协议检查和受控断网恢复。PVM audit 的 warn/skipped 与 0 退出码不能组合成“通过”。保存缺测项；单一 HTTPS 阻断演练不证明全协议无泄漏。
+
+远程路线在隧道实际运行时，从指定浏览器重新采集，测出口和所选 DNS/WebRTC 项。用 `accept --host HOST --egress --browser FILE` 比对；只有用户确实选择了时区/语言目标才传对应参数。`deliver` 同样接收 `--browser`，将两端结果保存到本机。本地 VM 路线使用 project audit 与 vm audit，不把 VM 名称作为远程 VPS 地址传给 accept；报告和 VM 工作区分别保存。
 
 按 [deliver](references/deliver.md) 保存启动入口与报告。检查进程的实际操作是否成功、浏览器是否可以正常访问用户需要的服务，由用户在浏览器完成账号登录。还要验证停止连接及恢复原配置。缺失观测不能算通过；未解决的问题写清影响，不能把部分结果说成全部可用。
 

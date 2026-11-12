@@ -1,5 +1,10 @@
 # Third-party code in Zhibi
 
+## PVM and Blackhole workflow references
+
+- [PVM](https://github.com/huangzheng2016/pvm), reviewed at `edebd3cfbf266f7c5a8bbf86907b6f5d19140b6c` (v1.1.6): optional external CLI backend. Zhibi independently implements command orchestration and audit parsing; no PVM source, image or executable is included. No LICENSE file was found in the reviewed tree; Zhibi's MIT license does not grant rights to redistribute PVM. Install it separately from its upstream distribution.
+- [Blackhole](https://github.com/tommy0103/blackhole), reviewed at `49e27ed949384b69b07c1bb52c43ce5cd3e145ba` (MIT): reference for project binding, persistent application state and launch ergonomics. No source code is incorporated. Zhibi does not require its Docker image.
+
 ## CCBaga
 
 - Copyright (c) 2026 CCBaga contributors. MIT; full text: [licenses/CCBaga-MIT.txt](licenses/CCBaga-MIT.txt).
