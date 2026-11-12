@@ -6,6 +6,8 @@ Zhibi is an Agent Skill with local tools. It inspects the browser and network yo
 
 [简体中文](README.md) · [Get started](#get-started) · [Implementation status](docs/implementation/two-route-plan.md)
 
+IPv6 is disabled by default in managed PVM guests; the private proxy gateway permits IPv4 egress only. Host networking is unchanged.
+
 ## Two runtime routes
 
 | Route | Application runtime | Files and browser |

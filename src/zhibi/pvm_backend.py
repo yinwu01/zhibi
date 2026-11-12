@@ -138,6 +138,23 @@ def prepare(args):
             "exit": data["exit"], "direct": data["exit"] == "direct", "steps": provision_steps(data)}
 
 
+def ipv6_expression(apply=False):
+    from importlib.resources import files
+    source = files("zhibi").joinpath("guest_ipv6.py").read_text(encoding="utf-8")
+    return ("sudo -n " if apply else "") + "python3 -c " + shlex.quote(source) + (" --apply" if apply else "")
+
+
+def ipv6_policy(data, apply=False):
+    result = call(data, "ssh", "-T", data["name"], ipv6_expression(apply))
+    try:
+        report = json.loads(result.stdout)
+    except (ValueError, TypeError):
+        raise InputError("无法核验 VM 的 IPv6 禁用状态；未启动应用或桌面。")
+    if result.returncode or not isinstance(report, dict) or report.get("state") != "ok":
+        raise InputError("VM IPv6 未成功禁用；未启动应用或桌面。")
+    return report
+
+
 def provision_steps(data):
     return [
         ["create", "--image", data["image"], "--name", data["name"], "--user", data["user"],
@@ -145,6 +162,7 @@ def provision_steps(data):
          "--tz", data["timezone"], "--locale", data["locale"], "--share", "none", "--no-start"],
         ["start", data["name"]],
         ["route", data["name"], "--via", data["exit"]],
+        ["ssh", "-T", data["name"], ipv6_expression(True)],
         ["mount", data["name"], "--profile", "coherent", data["project"] + ":/workspace"],
     ]
 
@@ -245,6 +263,7 @@ def run_application(workspace, text, interactive, apply):
     routes = call(data, "route", "ls")
     if routes.returncode or effective_route(routes.stdout, data["name"]) != data["exit"]:
         raise InputError("VM 实际路由与绑定不符或无法确认；未启动应用。")
+    ipv6_policy(data, apply=True)
     expression = "cd -- " + shlex.quote(data["guest_workdir"]) + " || exit\n" + text
     status = foreground(guest_command(data, expression, interactive), env=environment(data))
     info.update(applied=True, exit_status=status)
@@ -274,6 +293,7 @@ def reconcile(folder, data, apply):
                            env=environment(data), capture_output=True, timeout=30)
     if check.returncode:
         raise InputError("VM 内共享目录不可用。")
+    ipv6_policy(data, apply=apply)
     if apply:
         data.update(phase="ready", current_step=None, completed=[step[0] for step in provision_steps(data)])
         write_state(folder, data)
@@ -317,6 +337,12 @@ def dispatch(args):
         audit = call(data, "audit", data["name"], timeout=180)
         report = parse_audit(audit.stdout, data["exit"])
         routes = call(data, "route", "ls")
+        report["checks"]["ipv6_upstream"] = report["checks"]["ipv6"]
+        try:
+            report["checks"]["ipv6"] = ipv6_policy(data)
+        except InputError as exc:
+            report["checks"]["ipv6"] = {"state": "fail", "detail": str(exc)}
+        report["protocol_checks_passed"] = all(report["checks"][key]["state"] == "ok" for key in REQUIRED)
         report.update(upstream_exit_status=audit.returncode, rules=routes.stdout if not routes.returncode else None)
         if audit.returncode or routes.returncode:
             report["protocol_checks_passed"] = False
@@ -330,12 +356,18 @@ def dispatch(args):
     if data["phase"] != "ready":
         raise InputError("VM 工作区尚未完成配置。")
     if args.action == "desktop":
+        started = call(data, "start", data["name"], timeout=300)
+        if started.returncode:
+            raise InputError("VM 未能启动；未打开桌面。")
+        ipv6_policy(data, apply=True)
         # URL contains a password. PVM opens it locally; do not echo it in JSON.
         result = call(data, *parts, timeout=180)
     else:
         result = call(data, *parts, timeout=300)
     if result.returncode:
         raise InputError("PVM 操作失败，请检查 VM 状态。")
+    if args.action == "start":
+        ipv6_policy(data, apply=True)
     return {"applied": True, "action": args.action, "name": data["name"]}
 
 

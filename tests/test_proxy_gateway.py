@@ -7,7 +7,8 @@ import tempfile
 import threading
 import unittest
 
-from zhibi.proxy_gateway import Gateway, exact
+from zhibi.proxy_gateway import Gateway, exact, connect_ipv4
+from unittest.mock import patch
 
 
 class Echo(socketserver.BaseRequestHandler):
@@ -61,3 +62,22 @@ class GatewayTests(unittest.TestCase):
                 self.assertFalse((root / 'proxy.sock').exists())
             finally:
                 root.chmod(0o700)
+
+    def test_ipv6_socks_requests_rejected_before_connect(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp).resolve() / 'proxy.sock'
+            with Gateway(path) as gateway:
+                thread = threading.Thread(target=gateway.serve_forever, daemon=True); thread.start()
+                try:
+                    with patch('zhibi.proxy_gateway.connect_ipv4', side_effect=AssertionError('connected')):
+                        with socket.socket(socket.AF_UNIX) as client:
+                            client.settimeout(5); client.connect(str(path)); client.sendall(b'\x05\x01\x00')
+                            exact(client, 2)
+                            client.sendall(b'\x05\x01\x00\x04' + socket.inet_pton(socket.AF_INET6, '::1') + struct.pack('!H', 443))
+                            self.assertEqual(exact(client, 10), b'\x05\x08\x00\x01' + b'\x00' * 6)
+                finally:
+                    gateway.shutdown(); thread.join(timeout=5)
+
+    def test_ipv6_literal_in_domain_cannot_bypass_policy(self):
+        with self.assertRaises(OSError):
+            connect_ipv4('::1', 443)

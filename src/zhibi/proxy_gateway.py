@@ -25,6 +25,21 @@ def exact(sock, count):
     return value
 
 
+def connect_ipv4(host, port):
+    """Resolve only A records and never fall back to IPv6 (including literals)."""
+    error = OSError('No IPv4 address available')
+    for family, kind, proto, _, address in socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM):
+        target = socket.socket(family, kind, proto)
+        try:
+            target.settimeout(15)
+            target.connect(address)
+            return target
+        except OSError as exc:
+            error = exc
+            target.close()
+    raise error
+
+
 def relay(left, right):
     readers = [left, right]
     while readers:
@@ -64,7 +79,8 @@ class Handler(socketserver.BaseRequestHandler):
             if kind == 1:
                 host = socket.inet_ntop(socket.AF_INET, exact(client, 4))
             elif kind == 4:
-                host = socket.inet_ntop(socket.AF_INET6, exact(client, 16))
+                client.sendall(b'\x05\x08\x00\x01' + b'\x00' * 6)
+                return
             elif kind == 3:
                 host = exact(client, exact(client, 1)[0]).decode('ascii')
                 if not host or '\0' in host:
@@ -73,7 +89,7 @@ class Handler(socketserver.BaseRequestHandler):
                 client.sendall(b'\x05\x08\x00\x01' + b'\x00' * 6)
                 return
             port = struct.unpack('!H', exact(client, 2))[0]
-            with socket.create_connection((host, port), timeout=15) as target:
+            with connect_ipv4(host, port) as target:
                 bound, bound_port = target.getsockname()[:2]
                 address = ipaddress.ip_address(bound)
                 client.sendall(bytes([5, 0, 0, 1 if address.version == 4 else 4])
@@ -144,7 +160,7 @@ def serve(path):
             for sig in previous:
                 signal.signal(sig, stop)
             print(json.dumps({'status': 'ready', 'socket': str(server.path),
-                              'egress': 'server-existing-route', 'protocol': 'SOCKS5 CONNECT'}), flush=True)
+                              'egress': 'server-existing-route', 'protocol': 'SOCKS5 CONNECT', 'ipv6': 'disabled'}), flush=True)
             server.serve_forever(poll_interval=0.2)
     finally:
         for sig, handler in previous.items():

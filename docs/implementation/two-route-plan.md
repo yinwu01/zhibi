@@ -53,9 +53,17 @@ README 以用户原有重写稿为基础补齐，并保留定位与作者说明�
 
 - 命名出口在另一台一次性本地 VM 内运行 userspace exit-agent，未在现有 Linux 服务器开放额外监听端口。仅测试环境使用 SSH 转发连接控制端与数据端；证书指纹固定，token 私有保存。
 - 应用 VM 的 TCP、UDP、ICMP、DNS 出口探针通过，HTTPS 实际访问成功。暂停测试出口进程后 HTTPS 超时；恢复后重新成功且出口 IP 一致。VM Chromium 的实际 HTTPS 出口也与 CLI 一致。
-- IPv6 上游报告仍为 warn（guest 启用、gateway 丢弃），未冒充完整 IPv6 泄漏实测，知彼报告保留 `protocol_checks_passed=false` / `complete=false`。单个探针、示例应用和无登录浏览器不代表任何用户账号的完整业务验收。
+- 初次验收 IPv6 为 warn；后续按用户要求改为默认禁用，见下方补充。单个探针、示例应用和无登录浏览器不代表任何用户账号的完整业务验收。
 - 项目 start/resume 使用持久化示例应用验证；不自动提供通用会话恢复。既有 runtime-service 的真实 systemd 测试记录见 [持续服务证据](process-wrapper.md)，本轮未在现有 Linux 测试机重装或重启任何服务。
 - Linux 测试只创建私人临时目录、编译测试依赖和运行 scoped 进程；收尾核查该目录对应进程为零。系统包、现有服务、主机防火墙与 DNS 未改动。
 - 最终 240 项回归，238 通过、2 项环境跳过；全新 wheel 安装与仓库外 Skill 检查通过。发布包重建、秘密签名扫描及 GitHub 提交核对按交付流程执行。
 
 这里完成的是两条路线的实现与隔离环境验证。每次真实部署仍按主 Skill 对用户选定的出口、应用、浏览器和账号进行验收；缺测项如实保留。
+
+
+## IPv6 默认禁用补充
+
+- PVM guest 写入专用 sysctl 配置并通过 GRUB 添加 `ipv6.disable=1`。实测发现仅 sysctl 会被网络管理器在重启时覆盖，因此同时配置内核启动参数。每次知彼启动应用或桌面前应用并核验，失败则停止启动。
+- 读回所有接口、IPv6 地址表及无发包的 IPv6 路由检查，不再只信任 `conf/all/disable_ipv6`。参见 [Linux 内核 sysctl 文档](https://docs.kernel.org/networking/ip-sysctl.html)。
+- 私人 SOCKS 网关拒绝 IPv6 地址类型，域名解析和连接仅用 AF_INET。已有导出网关需用更新后的源码重新生成并按原部署流程更新；不会自动重启现有服务器服务。外接代理和宿主网络不由此更改。
+- 实测：临时 PVM guest 直接通过上游 stop/start 重启后，`ipv6.disable=1` 生效，IPv6 地址为空、IPv6 路由不可用，IPv4 HTTPS 仍返回 200。现有 Linux 测试机仅在新临时目录运行网关测试，IPv6 请求拒绝及 IPv4 传输通过，未修改任何系统配置。247 项回归中 245 通过、2 项环境跳过。

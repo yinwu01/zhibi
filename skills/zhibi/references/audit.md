@@ -13,7 +13,7 @@ zhibi project audit --project LOCAL_PROJECT --network --expected-ip EXPECTED_IP 
   --browser BROWSER_JSON --out NEW_REPORT.private.json
 ```
 
-探针显式访问 api.ipify.org；报告私有保存，输出包含本次 IP。DNS 解析成功只说明可解析，不证明查询经过哪个出口；IPv6 内核配置只是配置读数。对 DNS 路径需要自建观察端或 PVM 出口探针，UDP 用已知可达的测试端点验证，IPv6 需结合路由和实际请求。缺少观测保持 not_measured。
+探针显式访问 api.ipify.org；报告私有保存，输出包含本次 IP。DNS 解析成功只说明可解析，不证明查询经过哪个出口；IPv6 逐接口内核配置是配置读数；PVM 还检查地址清空及 IPv6 路由不可用。对 DNS 路径需要自建观察端或 PVM 出口探针，UDP 用已知可达的测试端点验证，IPv6 需结合路由和实际请求。缺少观测保持 not_measured。
 
 ## 受控断网演练
 

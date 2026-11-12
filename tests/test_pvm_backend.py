@@ -68,7 +68,7 @@ class BackendTests(unittest.TestCase):
         self.assertEqual((folder / "vm.private.json").stat().st_mode & 0o777, 0o600)
         steps = pvm.provision_steps(data)
         self.assertIn("--no-start", steps[0])
-        self.assertEqual([s[0] for s in steps], ["create", "start", "route", "mount"])
+        self.assertEqual([s[0] for s in steps], ["create", "start", "route", "ssh", "mount"])
         self.assertEqual(steps[2][-1], "jp")
 
     def test_unsupported_version_creates_no_workspace(self):
@@ -135,7 +135,7 @@ class BackendTests(unittest.TestCase):
     def test_desktop_secret_not_returned(self):
         folder, data = self.prepare()
         data["phase"] = "ready"; pvm.write_state(folder, data)
-        with patch.object(pvm, "check_version"), patch.object(pvm, "call", return_value=SimpleNamespace(returncode=0, stdout="desktop ready: http://localhost/#password=secret")):
+        with patch.object(pvm, "ipv6_policy"), patch.object(pvm, "check_version"), patch.object(pvm, "call", return_value=SimpleNamespace(returncode=0, stdout="desktop ready: http://localhost/#password=secret")):
             result = pvm.dispatch(SimpleNamespace(action="desktop", workspace=str(folder), apply=True))
         self.assertNotIn("secret", json.dumps(result))
 
@@ -147,7 +147,7 @@ class BackendTests(unittest.TestCase):
                     ("mount", "ls", "work"): "HOST GUEST PROFILE ACCESS\n" + data["project"] + " /workspace coherent rw\n",
                     ("route", "ls"): "vm work proxy jp\ncluster-default * route direct\n"}[parts]
             return SimpleNamespace(returncode=0, stdout=text)
-        with patch.object(pvm, "check_version"), patch.object(pvm, "call", side_effect=call), \
+        with patch.object(pvm, "ipv6_policy"), patch.object(pvm, "check_version"), patch.object(pvm, "call", side_effect=call), \
                 patch("subprocess.run", return_value=SimpleNamespace(returncode=0)):
             result = pvm.reconcile(folder, data, True)
         self.assertTrue(result["reconciled"])
@@ -160,3 +160,21 @@ class BackendTests(unittest.TestCase):
             with self.assertRaises(InputError):
                 pvm.reconcile(folder, data, True)
         self.assertEqual(pvm.load(folder)[1]["phase"], "prepared")
+
+    def test_ipv6_failure_blocks_application_and_desktop(self):
+        folder, data = self.prepare()
+        data['phase'] = 'ready'; pvm.write_state(folder, data)
+        with patch.object(pvm, 'check_version'), patch.object(pvm, 'call', return_value=SimpleNamespace(returncode=0, stdout='vm work proxy jp\n')), \
+                patch.object(pvm, 'ipv6_policy', side_effect=InputError('IPv6 enabled')), \
+                patch.object(pvm, 'foreground', side_effect=AssertionError('application launched')):
+            with self.assertRaises(InputError):
+                pvm.run_application(folder, 'true', False, True)
+            with self.assertRaises(InputError):
+                pvm.dispatch(SimpleNamespace(action='desktop', workspace=str(folder), apply=True))
+
+    def test_ipv6_readback_failure_is_not_success(self):
+        _, data = self.prepare()
+        for code, output in [(1, '{"state":"ok"}'), (0, '{"state":"fail"}'), (0, '')]:
+            with patch.object(pvm, 'call', return_value=SimpleNamespace(returncode=code, stdout=output)):
+                with self.assertRaises(InputError):
+                    pvm.ipv6_policy(data)

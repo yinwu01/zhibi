@@ -11,6 +11,7 @@ from .models import InputError, now
 
 PROBE = r'''
 import ipaddress,json,os,socket,urllib.request
+from pathlib import Path
 r={'execution':'ok','egress':{'state':'error'},'dns':{'state':'not_measured'},'ipv6':{'state':'not_measured'}}
 try:
     socket.setdefaulttimeout(6)
@@ -24,8 +25,9 @@ try:
 except Exception:
     pass
 try:
-    with open('/proc/sys/net/ipv6/conf/all/disable_ipv6') as f:
-        r['ipv6']={'state':'observed','disabled':f.read().strip()=='1'}
+    values={p.parent.name:p.read_text().strip() for p in Path('/proc/sys/net/ipv6/conf').glob('*/disable_ipv6')}
+    boot_disabled='ipv6.disable=1' in Path('/proc/cmdline').read_text().split() and not values
+    r['ipv6']={'state':'observed','disabled':boot_disabled or bool(values) and {'all','default','lo'} <= values.keys() and all(v=='1' for v in values.values()),'interfaces':values}
 except OSError:
     pass
 print(json.dumps(r))

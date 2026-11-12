@@ -25,7 +25,7 @@ zhibi vm provision --workspace VM_WORKSPACE --apply
 zhibi vm status --workspace VM_WORKSPACE --live
 ```
 
-prepare 只保存私人计划。provision 顺序是创建但不启动 → 首次启动建立网关 → 设置这台 VM 的出口 → coherent 共享当前项目到 `/workspace`。不会修改整个集群默认出口。PVM v1.1.6 首次启动才创建网关，无法在网关不存在时设置实例出口。因此镜像构建和首次系统启动使用准备阶段网络；出口设置完成前不共享项目、不安装或启动用户应用。若用户要求连系统首次启动也不能直连，先由 Agent 准备独立出口环境，不能使用本流程直接交付。
+prepare 只保存私人计划。provision 顺序是创建但不启动 → 首次启动建立网关 → 设置这台 VM 的出口 → 在 guest 持久禁用 IPv6并核验 → coherent 共享当前项目到 `/workspace`。不会修改整个集群默认出口。PVM v1.1.6 首次启动才创建网关，无法在网关不存在时设置实例出口。因此镜像构建和首次系统启动使用准备阶段网络；出口设置完成前不共享项目、不安装或启动用户应用。若用户要求连系统首次启动也不能直连，先由 Agent 准备独立出口环境，不能使用本流程直接交付。
 
 失败时状态与各步骤的 `*.private.log` 保存在工作区。现有 VM 不会被自动删除，也不会自动重放创建。Agent 先用同一 PVM_HOME 的 `pvm ls`、`pvm mount ls NAME`、`pvm route ls` 和日志定位，再处理失败步骤；处理完成后用 `vm reconcile --workspace VM_WORKSPACE --apply` 读回镜像、用户、共享目录、出口和目录可访问性，符合计划才恢复 ready；不要手改 phase。准备重新创建时先显式清理本次实例，不能删除其他 VM 或整个 PVM_HOME。
 
@@ -40,9 +40,11 @@ zhibi vm desktop --workspace VM_WORKSPACE --apply
 zhibi vm stop --workspace VM_WORKSPACE --apply
 ```
 
-project start 会启动 VM、检查默认出口仍符合绑定，再进入 `/workspace`。应用 HOME 保存在虚拟磁盘；恢复脚本按应用自身协议。VM 关机后任务不继续运行，需要常驻时优先远程路线。desktop 只打开回环桌面，不启用 public；URL 含密码，不贴进聊天或公开日志。
+project start 会启动 VM、检查默认出口仍符合绑定、重新禁用并核验 guest IPv6，再进入 `/workspace`。应用 HOME 保存在虚拟磁盘；恢复脚本按应用自身协议。VM 关机后任务不继续运行，需要常驻时优先远程路线。desktop 只打开回环桌面，不启用 public；URL 含密码，不贴进聊天或公开日志。
 
 本地编辑器与 VM 共享同一项目；测试双向可见与文件权限。图片保存到项目中，向应用提供 `/workspace/相对路径`。不额外挂载整台电脑，也不承诺跨桌面快捷键与图片剪贴板已自动适配。
+
+IPv6 默认关闭：只在这台 guest 写入 `/etc/sysctl.d/99-zhibi-disable-ipv6.conf`，并用 GRUB 启动参数 `ipv6.disable=1` 防止网络管理器在重启后重新启用，不改宿主或其他 VM。`vm start`、`project start/resume`、`vm desktop` 会应用并核验；失败就不启动应用或桌面。已有工作区执行 `vm start --workspace VM_WORKSPACE --apply` 即可更新。不要绕过知彼入口后假定策略已生效。
 
 ## 验收与恢复
 
