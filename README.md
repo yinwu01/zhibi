@@ -1,10 +1,12 @@
-# 知彼 (zhibi) · 让 Agent 帮你检查和对齐网络环境
+# cc-zhibi · 知彼 · 让 Agent 帮你检查和对齐网络环境
 
 > **从风控视角做网络环境切换前的本地自检与判读。不推荐、不返佣、不卖任何服务。**
 >
 > [快速开始](#3-分钟快速开始) · [它能帮你做什么](#知彼能帮你做什么) · [实际效果示例](#实际会得到什么) · [使用前提与边界](#使用前提与能力边界) · [English](README.en.md)
 
 ---
+
+项目名为 `cc-zhibi`；命令、Skill 和 Python 包继续使用 `zhibi`。
 
 ## 为什么需要「知彼」？
 
@@ -69,8 +71,8 @@
 目前请直接使用源码安装。打开终端（或直接让你的 Agent 执行）：
 
 ```bash
-git clone https://github.com/yinwu01/zhibi.git
-cd zhibi
+git clone https://github.com/yinwu01/cc-zhibi.git
+cd cc-zhibi
 python3 scripts/install_skill.py --host codex
 ```
 

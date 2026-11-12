@@ -30,7 +30,7 @@
 
 - 确定浏览器与地区目标，并允许 Computer Use 访问 AdsPower Global，或提供本机私人 API 配置文件路径；不要求在聊天里发送 API key。当前本机 API 重查仍返回 `Require api-key`，此前 UI 工具未获准访问该应用且未提供更具体原因。
 - 在专用环境内由用户完成正常应用登录，再执行约定的实际操作与会话验收；不复制既有账号凭据来替代这一步。
-- GitHub 账号账单锁定解除后重跑 CI。最近一次重试的原始提示为 `The job was not started because your account is locked due to a billing issue.`，见 [运行记录](https://github.com/yinwu01/zhibi/actions/runs/42012596894)。
+- GitHub 账号账单锁定解除后重跑 CI。最近一次重试的原始提示为 `The job was not started because your account is locked due to a billing issue.`，见 [运行记录](https://github.com/yinwu01/cc-zhibi/actions/runs/42012596894)。
 
 没有这些验收证据，整体目标仍未完成。以下轮次记录描述各阶段当时状态，不作为当前待办清单。
 

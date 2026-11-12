@@ -1,12 +1,14 @@
-# Zhibi · Let your agent inspect and align your environment
+# cc-zhibi · 知彼 · Let your agent inspect and align your environment
 
-Zhibi is an Agent Skill with local tools. It inspects the browser and network you actually use, prepares a dedicated Linux application environment when requested, and records what was verified.
+cc-zhibi is an Agent Skill with local tools. It inspects the browser and network you actually use, prepares a dedicated Linux application environment when requested, and records what was verified.
 
 **Scan → Choose runtime and exit → Prepare the application → Configure the browser → Verify and hand over.**
 
 [简体中文](README.md) · [Get started](#get-started) · [Implementation status](docs/implementation/two-route-plan.md)
 
 IPv6 is disabled by default in managed PVM guests; the private proxy gateway permits IPv4 egress only. Host networking is unchanged.
+
+The project is named `cc-zhibi`; the CLI, Skill and Python package retain the name `zhibi`.
 
 ## Two runtime routes
 
@@ -34,8 +36,8 @@ A smaller environment helps align the chosen timezone, language and network path
 Use Python 3.9+, an SSH client and an Agent host such as Codex. Computer use is helpful for browser settings; supported APIs and manual steps can also be used.
 
 ```bash
-git clone https://github.com/yinwu01/zhibi.git
-cd zhibi
+git clone https://github.com/yinwu01/cc-zhibi.git
+cd cc-zhibi
 python3 scripts/install_skill.py --host codex
 ```
 
